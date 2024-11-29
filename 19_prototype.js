@@ -114,7 +114,7 @@ circle5.getDiameter === circle6.getDiameter; // true
  *
  * 모든 객체는 [[Prototype]]이란 내부 슬롯을 가지며, 이 내부 슬롯의 값은 프로토타입 객체의 참조다. (null인 경우도 있다 👉 Object.create())
  * [[Prototype]]의 내부 슬롯 값은 객체의 생성 방식에 의해 결정된다. 즉, 객체가 생성될 때 그 방식에 따라 자동으로 결정된다.
- * 예를 들어, 객체 리터럴의 의해 생성된 객체의 프로토타입은 Object.prototype이고 생성자 함수에 의해 생성된 객체의 프로토타입은 생성자 함수의 prototype 프로퍼티에 바인딩되어 있는 객체다.
+ * 예를 들어, 객체 리터럴의 의해 생성된 객체의 프로토타입은 Object.prototype이고 생성자 함수에 의해 생성된 객체의 프로토타입은 생성자 함수의 prototype 프로퍼티 객체다.
  *
  * 쉽게 말하면 프로토타입은 각 객체가 생성되는 방식에 따라 자동으로 연결되는 기본 부모 객체이다.
  * 객체에서 프로퍼티나 메서드를 찾을 때 해당 객체에 없다면 상위 객체에 접근한다. 이를 프로토타입 체인이라고 한다. (최상위 객체는 Object.prototype이다)
@@ -187,3 +187,35 @@ Object.getPrototypeOf(obj3); // Object.prototype
 Object.setPrototypeOf(obj3, obj4);
 Object.getPrototypeOf(obj3); // { sayHello: f sayHello() }
 obj3.sayHello(); // Hi, I'm Olivia
+
+// 19-3-2. 함수 객체의 prototype 프로퍼티
+
+// 함수 객체만이 소유하는 prototype 프로퍼티는 생성자 함수가 미래에 생성할 instance의 prototype 객체를 가리킨다.
+
+// 함수 객체(function declaration, function expression) 즉, constructor는 prototype 프로퍼티를 소유한다.
+const foo = function () {};
+foo.hasOwnProperty("prototype"); // true
+(function () {}).hasOwnProperty("prototype"); // true
+
+// arrow function, 일반 객체, ES6 축약 메서드 즉, non-constructor는 prototype을 소유하지 않는다.
+const bar = () => {};
+bar.hasOwnProperty("prototype"); // false
+({}).hasOwnProperty("prototype"); // false
+
+// 모든 객체가 가지는 __proto__(Object.prototype)과 생성자 함수의 객체가 가지는 prototype 프로퍼티는 동일한 프로토타입을 의미한다.
+function Banana() {
+  if (!new.target) {
+    return new Banana();
+  }
+
+  this.color = "yellow";
+}
+
+const banana = new Banana();
+banana.__proto__ === Banana.prototype; // true
+
+// 🔑 결국 생성자 함수를 이용하여 생성한 객체의 __proto__는 Object.prototype인 최상위 prototype을 거치기전에 생성자 함수의 prototype 프로퍼티가 위치한다.
+banana.__proto__; // {}, Banana 함수의 prototype 프로퍼티
+banana.__proto__.__proto__; // Object.prototype
+banana.__proto__.__proto__ === Object.prototype; // true
+banana.__proto__.__proto__.hasOwnProperty("hasOwnProperty"); // true
