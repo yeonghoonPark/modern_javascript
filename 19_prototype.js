@@ -218,4 +218,28 @@ banana.__proto__ === Banana.prototype; // true
 banana.__proto__; // {}, Banana 함수의 prototype 프로퍼티
 banana.__proto__.__proto__; // Object.prototype
 banana.__proto__.__proto__ === Object.prototype; // true
+banana.__proto__.hasOwnProperty("hasOwnProperty"); // false
 banana.__proto__.__proto__.hasOwnProperty("hasOwnProperty"); // true
+
+// 19-3-3. 프로토타입의 constructor 프로퍼티와 생성자 함수
+function Guitarist(name) {
+  this.name = name;
+}
+
+// constructor 프로퍼티는 prototype 프로퍼티로 자신을 참조하는 생성자 함수 자체를 가리킨다.
+Guitarist === Guitarist.prototype.constructor; // true
+
+const johnWilliams = new Guitarist("John Williams");
+// 실제로 생성자 함수를 통해 생성한 객체인 johnWilliams는 constructor 프로퍼티가 없다.
+// 하지만 johnWilliams 객체의 prototype인 Guitarist.prototype에는 constructor 프로퍼티가 있다.
+// 따라서 johnWilliams 객체는 프로토타입인 Guitarist.prototype의 constructor 프로퍼티를 상속 받아 사용할 수 있다.
+johnWilliams.constructor === Guitarist; // true
+
+// function declaration, function expression을 이용하지 않는 arrow function과 ES6 method는 constructor 프로퍼티를 가지지 못한다.
+// 이유는 생성자 함수로 호출할 수 있는 조건인 내부 메서드인 [[Construct]]가 없기 때문이다. (단, 호출 조건인 [[Call]]은 가지고 있다)
+const arrowFunc = () => {};
+arrowFunc.__proto__; // f () { [native code] }
+arrowFunc.__proto__.__proto__; // Object.prototype
+arrowFunc.__proto__.__proto__ === Object.prototype; // true
+arrowFunc.__proto__.hasOwnProperty("hasOwnProperty"); // false
+arrowFunc.__proto__.__proto__.hasOwnProperty("hasOwnProperty"); // true
