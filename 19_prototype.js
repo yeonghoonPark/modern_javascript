@@ -227,7 +227,8 @@ function Guitarist(name) {
 }
 
 // constructor 프로퍼티는 prototype 프로퍼티로 자신을 참조하는 생성자 함수 자체를 가리킨다.
-Guitarist === Guitarist.prototype.constructor; // true
+Guitarist.prototype.constructor === Guitarist; // true
+Object.prototype.constructor === Object; // true
 
 const johnWilliams = new Guitarist("John Williams");
 // 실제로 생성자 함수를 통해 생성한 객체인 johnWilliams는 constructor 프로퍼티가 없다.
@@ -243,3 +244,51 @@ arrowFunc.__proto__.__proto__; // Object.prototype
 arrowFunc.__proto__.__proto__ === Object.prototype; // true
 arrowFunc.__proto__.hasOwnProperty("hasOwnProperty"); // false
 arrowFunc.__proto__.__proto__.hasOwnProperty("hasOwnProperty"); // true
+arrowFunc.__proto__.__proto__.constructor === Object.prototype.constructor; // true
+
+/**
+ * 19-4. 리터럴 표기법에 의해 생성된 객체의 생성자 함수와 프로토타입
+ *
+ * 앞서 constructor 프로퍼티는 객체를 생성한 생성자 함수 자체를 참조한다고 했다.
+ * 하지만, 객체를 생성하는 방식은 생성자 함수뿐만이 아니라 리터럴 방식도 존재한다.
+ * 리터럴 방식은 명시적인 생성자 함수 호출 없이 객체를 생성한다. 그렇다면 해당 객체는 생성자 함수를 통해 생성된 객체일까?
+ * 결론은 "아니다" 이다.
+ * 단, 리터럴 방식으로 생성한 객체 또한 프로토타입 체인이 필요하고 이를 위해 가상의 Built-In 생성자 함수를 갖고 동작한다.
+ * 이는 실제로 생성자 함수를 통해 생성된 것은 아니지만 마치 그와 동일하게 동작한다고 봐도 무방하다. (차이점은 생성자 함수가 호출되지 않은 점)
+ * 즉, 리터럴 방식을 이용하든 생성자 함수를 이용하든 prototype과 constructor는 항상 쌍을 이룬다.
+ *
+ */
+
+// 생성자 함수에 의해 생성된 객체의 constructor 프로퍼티는 함수 자체이다.
+const newObject = new Object(); // Object 생성자 함수는 new 키워드를 붙이지 않아도 new 키워드를 사용한 것과 동일하게 동작한다.
+newObject.constructor === Object; // true
+
+const newFunction = new Function(); // Function 생성자 함수는 new 키워드를 붙이지 않아도 new 키워드를 사용한 것과 동일하게 동작한다.
+newFunction.constructor === Function; // true
+
+function Weapon(type) {
+  this.type = type;
+}
+const knife = new Weapon("knife");
+knife.constructor === Weapon; // true
+
+// 생성자 함수를 이용하지 않고(인스턴트를 생성하지 않음) 리터럴 표기법으로 객체를 생성하는 방식도 있다.
+const literalObject = {};
+const literalFunction = function () {};
+const literalArray = [];
+const literalRegexp = /is/gi;
+// 위의 방식을 통해 생성한 객체들 또한 프로토타입을 가지고 있다.
+// 단, 리터럴 방식을 통해 생성된 객체의 constructor 프로퍼티는 객체를 생성한 생성자 함수라고 단정 지을 수 없다.
+
+literalObject.constructor === Object; // true
+literalFunction.constructor === Function; // true
+literalArray.constructor === Array; // true
+literalRegexp.constructor === RegExp; // true
+// 위의 식을 보면 리터럴 방식으로 생성된 객체는 사실 생성자 함수가 호출되어 생성된 것이 아니다.
+// 생성자 함수가 호출되지 않았지만 마치 생성자 함수가 호출된 것처럼 동작한다.
+// 이는 프로토타입체인이 필요하기 때문에 가상의 생성자 함수가 연결되는 것이다.
+
+literalObject.__proto__ === Object.prototype; // true
+literalFunction.__proto__ === Function.prototype; // true
+literalArray.__proto__ === Array.prototype; // true
+literalRegexp.__proto__ === RegExp.prototype; // true
