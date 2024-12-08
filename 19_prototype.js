@@ -1,4 +1,4 @@
-"use strict";
+// "use strict";
 
 // JavaScript는 프로토타입 기반(prototype-based)의 객체지향 프로그래밍 언어(OOP: Object Oriented Programming)이다.
 // C++ 또는 Java와 같이 상속과 캡슐화를 위한 public, private, protected가 없지만 프로토타입 기반의 OOP이다.
@@ -300,8 +300,30 @@ literalRegexp.__proto__ === RegExp.prototype; // true
  *
  * 앞에서 리터럴 표기법에 의해 생성된 객체도 생성자 함수와 연결되는 것을 살펴보았다.
  * 객체는 리터럴 표기법과 생성자 함수에 의해 생성되므로 결국 모든 객체는 생성자 함수와 연결되어 있다.
- * 🔑 프로토타입은 생성자 함수가 생성되는 시점에 더불어 생성된다.
+ * 🔑 프로토타입은 생성자 함수로 객체를 생성되는 시점에 더불어 생성된다.
  * 자바스크립트에서 생성자 함수는 `Built-In 생성자 함수`와 `사용자 정의 생성자 함수`로 구분된다.
  * 이렇게 구분된 두 가지 생성자 함수는 프로토타입 생성 시점 또한 다르다.
  *
  */
+
+// 19-5-1. 사용자 정의 생성자 함수와 프로토타입 생성 시점
+
+// 생성자 함수로 호출할 수 있는 함수, 즉 [[Construct]] 내부 슬롯을 지니는 함수 객체는 객체를 생성함과 동시에 프로토타입이 생성된다.
+function ConstructFunc() {
+  console.log(ConstructFunc.prototype); // constructor: f Country(name)
+  this.name = "constructor";
+}
+new ConstructFunc();
+
+// 생성자 함수로 호출할 수 없는 함수인 Arrow function, ES6 method 는 [[Construct]]가 존재하지 않기 때문에 프로토타입이 생성되지 않는다.
+const NonConstructFunc = (name) => {
+  console.log(NonConstructFunc.prototype); // undefined
+  this.name = "non-constructor";
+};
+NonConstructFunc(); // new 키워드를 사용하면 TypeError가 발생한다.
+
+// 위의 ConstructFunc 함수의 프로퍼티인 프로토타입은 객체이며 생성 시점에는 constructor 프로퍼티만 가지는 객체이다. (나중에 추가할 수 있다)
+// 결국 constructor 프로퍼티도 객체이기 때문에 프로토타입이 필요하고 이는 Object.prototype과 프로토타입체인 된다.
+// 🔑 즉, 사용자 정의 함수의 프로토타입은 호이스팅에 의해 함수 정의 시점에 Object.prototype과 바인딩되어 생성된다.
+// 사용자 정의 함수에 의해 생성된 객체는 `사용자 정의 함수.prototype`에 바인딩되고, 해당 프로토타입은 `Object.prototype`에 바인딩되는 형식으로 프로토타입체이닝이 이뤄진다.
+// 이처럼 사용자 정의 함수에 의해 생성된 객체의 프로토타입은 함수로 객체를 생성하는 시점에 프로토타입도 동시에 생성되며 생성된 프로토타입의 프로토타입은 언제나 Object.prototype이다.
