@@ -300,30 +300,45 @@ literalRegexp.__proto__ === RegExp.prototype; // true
  *
  * 앞에서 리터럴 표기법에 의해 생성된 객체도 생성자 함수와 연결되는 것을 살펴보았다.
  * 객체는 리터럴 표기법과 생성자 함수에 의해 생성되므로 결국 모든 객체는 생성자 함수와 연결되어 있다.
- * 🔑 프로토타입은 생성자 함수로 객체를 생성되는 시점에 더불어 생성된다.
- * 자바스크립트에서 생성자 함수는 `Built-In 생성자 함수`와 `사용자 정의 생성자 함수`로 구분된다.
+ * 프로토타입은 생성자 함수를 선언하는 방식에 따라 함수를 정의하거나 호출하는 시점에 더불어 생성된다.
+ * 자바스크립트에서 생성자 함수는 `사용자 정의 생성자 함수`와 `Built-In 생성자 함수`로 구분된다.
  * 이렇게 구분된 두 가지 생성자 함수는 프로토타입 생성 시점 또한 다르다.
  *
  */
 
 // 19-5-1. 사용자 정의 생성자 함수와 프로토타입 생성 시점
 
-// 생성자 함수로 호출할 수 있는 함수, 즉 [[Construct]] 내부 슬롯을 지니는 함수 객체는 객체를 생성함과 동시에 프로토타입이 생성된다.
-function ConstructFunc() {
-  console.log(ConstructFunc.prototype); // constructor: f Country(name)
-  this.name = "constructor";
+// 생성자 함수로 호출할 수 있는 함수, 즉 [[Construct]] 내부 슬롯을 지니는 함수 객체는 함수를 정의하거나 호출하는 시점에 프로토타입이 생성된다.
+// function declaration 경우, 함수가 정의되는 시점에 생성자 함수의 prototype 객체가 생성된다. (호이스팅 시점, 함수로 평가되는 시점이 run-time 이전이다)
+// function expression 경우, 함수가 호출되는 시점에 생성자 함수의 prototype 객체가 생성된다. (할당되는 시점, 함수로 평가되는 시점이 run-time 이다)
+// construct: function declaration, function expression
+console.log(DeclarationFunc.prototype); // {}
+function DeclarationFunc() {
+  this.name = "constructor: function declaration";
 }
-new ConstructFunc();
+new DeclarationFunc();
 
-// 생성자 함수로 호출할 수 없는 함수인 Arrow function, ES6 method 는 [[Construct]]가 존재하지 않기 때문에 프로토타입이 생성되지 않는다.
-const NonConstructFunc = (name) => {
-  console.log(NonConstructFunc.prototype); // undefined
-  this.name = "non-constructor";
+// console.log(ExpressionFunc.prototype); // TypeError: Cannot read properties of undefined (reding 'prototype')
+var ExpressionFunc = function () {
+  this.name = "constructor: function expression";
 };
-NonConstructFunc(); // new 키워드를 사용하면 TypeError가 발생한다.
+new ExpressionFunc();
+// 🔑 function expression은 var키워드를 사용하여 호이스팅이 발생하더라도 함수로 평가받지 못한다.
+// 왜냐하면 run-time 이전의 호이스팅 단계에서 `ExpressionFunc`는 선언 단계와 초기화 단계를 동시에 거쳐 undefined를 참조하고 있다.
+// 즉, run-time의 재할당 단계를 거쳐야 함수로 평가받고 이때 prototype 객체가 생성된다.
 
-// 위의 ConstructFunc 함수의 프로퍼티인 프로토타입은 객체이며 생성 시점에는 constructor 프로퍼티만 가지는 객체이다. (나중에 추가할 수 있다)
+// 생성자 함수로 호출할 수 없는 함수, arrow function, ES6 method 는 [[Construct]]가 존재하지 않기 때문에 프로토타입이 생성되지 않는다.
+// non-construct: arrow function, ES6 method
+const ArrowFunc = (name) => {
+  this.name = "non-constructor: arrow function";
+};
+ArrowFunc(); // new 키워드를 사용하면, TypeError: ArrowFunc is not a constructor
+console.log(ArrowFunc.prototype); // undefined
+
+// 위의 `ConstructFunc` 함수의 프로퍼티인 프로토타입은 객체이며 생성 시점에는 constructor 프로퍼티만 가지는 객체이다. (나중에 추가할 수 있다)
 // 결국 constructor 프로퍼티도 객체이기 때문에 프로토타입이 필요하고 이는 Object.prototype과 프로토타입체인 된다.
-// 🔑 즉, 사용자 정의 함수의 프로토타입은 호이스팅에 의해 함수 정의 시점에 Object.prototype과 바인딩되어 생성된다.
-// 사용자 정의 함수에 의해 생성된 객체는 `사용자 정의 함수.prototype`에 바인딩되고, 해당 프로토타입은 `Object.prototype`에 바인딩되는 형식으로 프로토타입체이닝이 이뤄진다.
-// 이처럼 사용자 정의 함수에 의해 생성된 객체의 프로토타입은 함수로 객체를 생성하는 시점에 프로토타입도 동시에 생성되며 생성된 프로토타입의 프로토타입은 언제나 Object.prototype이다.
+// 🔑 즉, 사용자 정의 함수의 프로토타입은 호이스팅에 의해 run-time 이전에 정의 되고 호출 시점에 Object.prototype과 바인딩되어 생성된다.
+// 사용자 정의 함수에 의해 생성된 객체는 `사용자 정의 함수.prototype`에 바인딩되고, 해당 프로토타입은 `Object.prototype`에 바인딩되는 형식으로 프로토타입체이닝이 이뤄진다. (Object.prototype은 가장 최상위 프로토타입이다)
+// 이처럼 사용자 정의 함수에 의해 생성된 객체의 프로토타입은 함수로 객체를 생성하는 시점에 프로토타입도 더불어 생성되며 생성된 프로토타입의 프로토타입은 언제나 Object.prototype이다.
+
+// 19-5-2. 빌트인 생성자 함수와 프로토타입 생성 시점
