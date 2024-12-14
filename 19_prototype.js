@@ -1,4 +1,4 @@
-// "use strict";
+"use strict";
 
 // JavaScript는 프로토타입 기반(prototype-based)의 객체지향 프로그래밍 언어(OOP: Object Oriented Programming)이다.
 // C++ 또는 Java와 같이 상속과 캡슐화를 위한 public, private, protected가 없지만 프로토타입 기반의 OOP이다.
@@ -324,13 +324,13 @@ var ExpressionFunc = function () {
 };
 new ExpressionFunc();
 // 🔑 function expression은 var키워드를 사용하여 호이스팅이 발생하더라도 함수로 평가받지 못한다.
-// 왜냐하면 run-time 이전의 호이스팅 단계에서 `ExpressionFunc`는 선언 단계와 초기화 단계를 동시에 거쳐 undefined를 참조하고 있다.
+// 왜냐하면 run-time 이전의 호이스팅 단계에서 식별자인 `ExpressionFunc`는 선언 단계와 초기화 단계를 동시에 거쳐 undefined를 참조하고 있다.
 // 즉, run-time의 재할당 단계를 거쳐야 함수로 평가받고 이때 prototype 객체가 생성된다.
 
 // 생성자 함수로 호출할 수 없는 함수, arrow function, ES6 method 는 [[Construct]]가 존재하지 않기 때문에 프로토타입이 생성되지 않는다.
 // non-construct: arrow function, ES6 method
 const ArrowFunc = (name) => {
-  this.name = "non-constructor: arrow function";
+  this.name = "non-constructor: arrow function"; // 여기서 this는 globalThis를 가리킨다.
 };
 ArrowFunc(); // new 키워드를 사용하면, TypeError: ArrowFunc is not a constructor
 console.log(ArrowFunc.prototype); // undefined
@@ -342,3 +342,9 @@ console.log(ArrowFunc.prototype); // undefined
 // 이처럼 사용자 정의 함수에 의해 생성된 객체의 프로토타입은 함수로 객체를 생성하는 시점에 프로토타입도 더불어 생성되며 생성된 프로토타입의 프로토타입은 언제나 Object.prototype이다.
 
 // 19-5-2. 빌트인 생성자 함수와 프로토타입 생성 시점
+
+// 모든 Built-In 생성자 함수는 전역 객체(window, global, globalThis)가 생성될 때 프로토타입도 같이 생성된다.
+// 전역 객체는 자바스크립트 엔진에 의해 run-time 이전에 생성되는 특수한 객체다.
+// 생성된 프로토타입은 Built-In 생성자 함수의 prototype 프로퍼티에 바인딩된다.
+// 🔑 즉, Built-In 생성자 함수의 프로토타입은 호출되는 시점 이전에 이미 객체화 되어 존재한다.
+RegExp.prototype; // 해당 생성자 함수의 prototype은 이미 존재한다.
