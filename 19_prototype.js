@@ -348,3 +348,17 @@ console.log(ArrowFunc.prototype); // undefined
 // 생성된 프로토타입은 Built-In 생성자 함수의 prototype 프로퍼티에 바인딩된다.
 // 🔑 즉, Built-In 생성자 함수의 프로토타입은 호출되는 시점 이전에 이미 객체화 되어 존재한다.
 RegExp.prototype; // 해당 생성자 함수의 prototype은 이미 존재한다.
+
+/**
+ * 19-6. 객체의 생성 방식과 프로토타입의 결정
+ *
+ * 객체를 생성하는 방식은 다양하다.
+ * 1. 객체 리터럴
+ * 3. Object 생성자 함수
+ * 4. 생성자 함수
+ * 2. Object.create 메서드
+ * 5. class
+ *
+ * 각 객체 생성 방식의 프로토타입은 추상 연산(Ordinary Object Create)에 전달되는 인수에 의해 결정된다.
+ *
+ */
