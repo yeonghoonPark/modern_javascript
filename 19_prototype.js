@@ -359,6 +359,24 @@ RegExp.prototype; // 해당 생성자 함수의 prototype은 이미 존재한다
  * 2. Object.create 메서드
  * 5. class
  *
- * 각 객체 생성 방식의 프로토타입은 추상 연산(Ordinary Object Create)에 전달되는 인수에 의해 결정된다.
- *
+ * 자바스크립트 엔진은 객체를 생성할 때, 내부 추상 연산(OrdinaryObjectCreate)을 호출하여 객체를 생성한다.
+ * 이 연산은 객체의 프로토타입을 설정하고, 객체의 내부 속성인 [[Prototype]]은 설정된 프로토타입을 참조한다.
+ * 즉, 각 객체의 프로토타입은 내부 추상 연산(OrdinaryObjectCreate)에 전달되는 인수에 의해 결정된다.
  */
+
+// 19-6-1. 객체 리터럴에 의해 생성된 객체의 프로토타입
+// 객체 리터럴로 객체를 생성할 때, OrdinaryObjectCreate를 호출하고 호출 시 매개변수로 전달되는 값은 Object.prototype이다.
+// 즉, 객체 리터럴로 생성된 객체의 __proto__는 Object.prototype을 참조하고 있다.
+
+// 객체 리터럴 방식으로 객체 생성
+const literalObj = { x: 1 };
+
+// 객체 리터럴로 생성된 객체는 Object.prototype을 상속받는다.
+// 따라서, literalObj는 Object.prototype에 정의된 메서드들(`constructor`, `hasOwnProperty`)을 사용할 수 있다.
+literalObj.constructor === Object; // true
+literalObj.hasOwnProperty("x"); // true
+
+// literalObj는 프로퍼티로 `constructor`와 `hasOwnProperty`를 가지고 있지 않다.
+// 하지만, 프로토타입으로 `Object.prototype`을 상속받았기 때문에 이를 자유롭게 사용할 수 있다.
+literalObj.hasOwnProperty("constructor"); // false
+literalObj.__proto__ === Object.prototype; // true
