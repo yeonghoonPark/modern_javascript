@@ -346,7 +346,7 @@ console.log(ArrowFunc.prototype); // undefined
 // 모든 Built-In 생성자 함수는 전역 객체(window, global, globalThis)가 생성될 때 프로토타입도 같이 생성된다.
 // 전역 객체는 자바스크립트 엔진에 의해 run-time 이전에 생성되는 특수한 객체다.
 // 생성된 프로토타입은 Built-In 생성자 함수의 prototype 프로퍼티에 바인딩된다.
-// 🔑 즉, Built-In 생성자 함수의 프로토타입은 호출되는 시점 이전에 이미 객체화 되어 존재한다.
+// 🔑 즉, Built-In 생성자 함수의 프로토타입은 호출되는 시점 이전에 이미 객체화 되어 존재한다. (run-time 이전에 전역 객체가 생성되는 시점)
 RegExp.prototype; // 해당 생성자 함수의 prototype은 이미 존재한다.
 
 /**
@@ -380,3 +380,20 @@ literalObj.hasOwnProperty("x"); // true
 // 하지만, 프로토타입으로 `Object.prototype`을 상속받았기 때문에 이를 자유롭게 사용할 수 있다.
 literalObj.hasOwnProperty("constructor"); // false
 literalObj.__proto__ === Object.prototype; // true
+
+// 19-6-2. Object 생성자 함수에 의해 생성된 객체의 프로토타입
+// Object 생성자 함수로 객체를 생성할 때, OrdinaryObjectCreate를 호출하고 호출 시 매개변수로 전달되는 Object.prototype이다.
+// 즉, Object 생성자 함수로 생성된 객체의 __proto__는 Object.prototype을 참조하고 있다.
+
+// Object 생성자 함수를 호출하여 객체 생성
+const objectObj = new Object();
+objectObj.x = 1;
+
+// 생성자 함수를 통해 생성된 객체는 Object.prototype을 상속 받는다.
+// 따라서, 리터럴 방식으로 생성된 객체와 동일하게 Object.prototype에 정의된 메서드들을 사용할 수 있다.
+objectObj.constructor === Object; // true
+objectObj.hasOwnProperty("x"); // true
+
+// objectObj 또한 프로퍼티로 `constructor`와 `hasOwnProperty`를 가지고 있지 않지만 `Object.prototype`을 상속받았기에 이를 자유롭게 사용할 수 있다.
+objectObj.hasOwnProperty("constructor"); // false
+objectObj.__proto__ === Object.prototype; // true
