@@ -354,9 +354,9 @@ RegExp.prototype; // 해당 생성자 함수의 prototype은 이미 존재한다
  *
  * 객체를 생성하는 방식은 다양하다.
  * 1. 객체 리터럴
- * 3. Object 생성자 함수
- * 4. 생성자 함수
- * 2. Object.create 메서드
+ * 2. Object 생성자 함수
+ * 3. 생성자 함수
+ * 4. Object.create 메서드
  * 5. class
  *
  * 자바스크립트 엔진은 객체를 생성할 때, 내부 추상 연산(OrdinaryObjectCreate)을 호출하여 객체를 생성한다.
@@ -397,3 +397,31 @@ objectObj.hasOwnProperty("x"); // true
 // objectObj 또한 프로퍼티로 `constructor`와 `hasOwnProperty`를 가지고 있지 않지만 `Object.prototype`을 상속받았기에 이를 자유롭게 사용할 수 있다.
 objectObj.hasOwnProperty("constructor"); // false
 objectObj.__proto__ === Object.prototype; // true
+
+// 19-6-3. 생성자 함수에 의해 정의된 객체의 프로토타입
+// new 연산자를 이용해 객체를 생성할 경우에도 OrdinaryObjectCreate를 호출한다. 다만 이때 전달되는 매개변수는 생성자 함수의 prototype 프로퍼티에 바인딩된 객체다.
+// 즉, new 연산자를 이용한 사용자 정의 생성자 함수를 통해 생성된 객체의 프로토타입은 함수의 prototype 프로퍼티에 바인딩 된 객체로 결정된다.
+function Carrier(name) {
+  this.name = name;
+}
+const sk = new Carrier("SK Telecom");
+
+// 사용자 정의 생성자 함수를 통해 생성된 객체는 함수 자체의 prototype 프로퍼티에 바인딩 된 객체를 상속받는다.
+sk.constructor === Carrier; // true
+sk.hasOwnProperty("name"); // true
+
+// 생성된 객체의 프로토타입은 Carrier.prototype에 바인딩된 객체
+Object.getPrototypeOf(sk); // Carrier { constructor: f Carrier(name) }
+
+// `hasOwnProperty` 메서드는 `sk` 객체에 직접적으로 존재하지 않지만,
+// `sk`의 프로토타입 체인 상에 존재하는 Object.prototype에서 상속받아 사용할 수 있다.
+sk.hasOwnProperty("name"); // true
+
+// 또한 프로토타입에 프로퍼티를 추가/삭제하여 미래에 생성될 인스턴스가 상속받도록 할 수 있다.
+Carrier.prototype.getCompanyName = function () {
+  return this.name;
+};
+
+// `Carrier` 생성자 함수를 통해 생성된 모든 객체는 프로토타입에 추가된 `getCompanyName`을 상속 받아 자신의 메서드처럼 사용할 수 있다.
+const kt = new Carrier("kt");
+kt.getCompanyName(); // kt
