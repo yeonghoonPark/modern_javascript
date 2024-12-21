@@ -15,7 +15,7 @@
  */
 
 // 사람을 추상화(abstraction)하여 "이름"과 "국가" 속성을 가지는 객체
-const person = {
+const Person = {
   name: "Kim Ki Nam",
   country: "Republic Of Korea",
 };
@@ -425,3 +425,41 @@ Carrier.prototype.getCompanyName = function () {
 // `Carrier` 생성자 함수를 통해 생성된 모든 객체는 프로토타입에 추가된 `getCompanyName`을 상속 받아 자신의 메서드처럼 사용할 수 있다.
 const kt = new Carrier("kt");
 kt.getCompanyName(); // kt
+
+/**
+ * 19-7. 프로토타입 체인
+ *
+ * 사용자 정의 생성자 함수에 의해 생성된 객체는 Object.prototype의 메서드인 `hasOwnProperty`를 사용할 수 있다.
+ * 이는 사용자 정의 생성자 함수의 프로토타입뿐만 아니라, Object.prototype 또한 상속받았음을 의미한다.
+ * 즉, 사용자 정의 생성자 함수의 프로토타입의 프로퍼티를 상속받은 객체는, 최종적으로 Object.prototype을 상속받게 된다.
+ * 이처럼 객체가 여러 프로토타입을 거쳐 최종적으로 Object.prototype에 도달하는 구조가 만들어지며, 이를 프로타타입 체인이라 한다.
+ *
+ */
+
+function Member(name) {
+  if (!new.target) {
+    return new Member(name);
+  }
+
+  this.name = name;
+}
+
+Member.prototype.getMemberName = function () {
+  return this.name;
+};
+
+const jamie = new Member("Jamie");
+
+// `hasOwnProperty`는 Object.prototype의 메서드이며, 이는 Object.prototype을 상속받았음을 의미한다.
+jamie.hasOwnProperty("name"); // true
+
+// `jamie` 객체의 프로토타입은 Member.prototype이다.
+Object.getPrototypeOf(jamie) === Member.prototype; // true
+
+// `Member.prototype`의 프로토타입은 Object.prototype 이다.
+Object.getPrototypeOf(Member.prototype) === Object.prototype; // true
+
+// 🔑 자바스크립트는 객체의 프로퍼티(메서드 포함)에 접근하려고 할 때 해당 객체에 접근하려는 프로퍼티가 없다면
+// [[Prototype]] 내부 슬롯의 참조를 따라서 자신의 부모 역할을 하는 프로토타입의 프로퍼티를 순차적으로 검색한다.
+// 이를 프로토타입 체인이라 하며 이는 자바스크립트가 객체지향 프로그래밍의 상속을 구현하는 메커니즘이다.
+// 프로토타입의 최상위는 항상 Object.prototype이며 이를 프로토타입의 종점(end of prototype chain)이라 한다.
