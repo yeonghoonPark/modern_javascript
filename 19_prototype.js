@@ -454,6 +454,7 @@ const jamie = new Member("Jamie");
 jamie.hasOwnProperty("name"); // true
 
 // `jamie` 객체의 프로토타입은 Member.prototype이다.
+jamie.__proto__ === Member.prototype; // true
 Object.getPrototypeOf(jamie) === Member.prototype; // true
 
 // `Member.prototype`의 프로토타입은 Object.prototype 이다.
@@ -463,3 +464,53 @@ Object.getPrototypeOf(Member.prototype) === Object.prototype; // true
 // [[Prototype]] 내부 슬롯의 참조를 따라서 자신의 부모 역할을 하는 프로토타입의 프로퍼티를 순차적으로 검색한다.
 // 이를 프로토타입 체인이라 하며 이는 자바스크립트가 객체지향 프로그래밍의 상속을 구현하는 메커니즘이다.
 // 프로토타입의 최상위는 항상 Object.prototype이며 이를 프로토타입의 종점(end of prototype chain)이라 한다.
+
+/**
+ * 19-8. 오버라이딩과 프로퍼티 섀도잉
+ *
+ * 오버라이딩(Overriding)이란 상위 클래스에서 정의된 메서드를 하위 클래스에서 재정의하여 사용하는 방식이다.
+ * 이를 통해 하위 클래스에서 상위 클래스의 메서드를 변경하거나 확장하여 사용할 수 있다.
+ * 오버라이딩을 통해 기존의 상위 클래스가 가진 property가 하위 클래스에서 동일한 이름의 프로퍼티로 덮어씌워지는 현상을 프로퍼티 섀도잉(Property shadowing)이라 한다.
+ * 즉, 하위 클래스에서 상위 클래스의 프로퍼티가 가려지거나 덮어지는 현상을 의미한다.
+ *
+ */
+
+function Singer(name) {
+  this.name = name;
+}
+
+// Singer 생성자 함수의 prototype에 `getSingerName` 메서드를 정의
+Singer.prototype.getSingerName = function () {
+  return this.name;
+};
+
+// Singer 생성자 함수를 통해 eminem 객체 생성
+const eminem = new Singer("Eminem");
+
+// eminem 객체에서 `getSingerName` 메서드를 오버라이딩 (섀도잉)
+eminem.getSingerName = function () {
+  return `The singer's name is ${this.name}`;
+};
+
+eminem.getSingerName(); // The singer's name is Eminem
+
+// 또한 delete 키워드를 통해 프로퍼티를 삭제할 수도 있다.
+delete eminem.getSingerName;
+
+eminem.getSingerName(); // Eminem
+
+// 단 주의할 점은 하위 클래스에서 상위 클래스의 프로퍼티(메서드)는 삭제할 수 없다.
+// 즉, 하위 클래스에서 상위 클래스의 프로토타입에 get 엑세스는 허용되나 set 엑세스는 허용되지 않는다.
+delete eminem.getSingerName;
+
+// delete를 한 번 더 하더라도 상위 클래스의 메서드인 `getSingerName`은 삭제되지 않는다.
+eminem.getSingerName(); // Eminem
+
+// 프로토타입 프로퍼티를 변경 또는 삭제하려면 하위 객체를 통한 프토로타입 체인이 아닌 해당 객체의 프로토타입에 직접 접근해야 한다.
+delete Singer.prototype.getSingerName; // 프로퍼티 삭제
+Singer.prototype; // { constructor: f Singer(name) }
+
+// 🔑 오버라이딩은 하위 클래스에서 상위 클래스의 메서드를 재정의하는 방법이다.
+// 이때 프로퍼티 섀도잉이 발생하면, 상위 클래스의 프로퍼티가 하위 클래스에서 덮어씌워지거나 가려진다.
+// 프로퍼티를 삭제할 때에도 하위 클래스에서 상위 클래스의 프로토타입 메서드는 절대 삭제할 수 없으며, 상위 클래스의 프로토타입에 직접 접근하여 삭제해야 한다는 점이다.
+// 즉, 하위 클래스에서 상위 클래스의 메서드를 동일한 이름으로 재정의하여 변경, 확장하여 사용할 수 있지만(오버라이딩), 삭제할 수는 없다.
