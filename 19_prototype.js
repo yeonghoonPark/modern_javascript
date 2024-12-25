@@ -399,11 +399,13 @@ objectObj.hasOwnProperty("constructor"); // false
 objectObj.__proto__ === Object.prototype; // true
 
 // 19-6-3. 생성자 함수에 의해 정의된 객체의 프로토타입
-// new 연산자를 이용해 객체를 생성할 경우에도 OrdinaryObjectCreate를 호출한다. 다만 이때 전달되는 매개변수는 생성자 함수의 prototype 프로퍼티에 바인딩된 객체다.
+// new 연산자를 이용해 객체를 생성할 경우에도 OrdinaryObjectCreate를 호출한다.
+// 다만 이때 전달되는 매개변수는 생성자 함수의 prototype 프로퍼티에 바인딩된 객체다.
 // 즉, new 연산자를 이용한 사용자 정의 생성자 함수를 통해 생성된 객체의 프로토타입은 함수의 prototype 프로퍼티에 바인딩 된 객체로 결정된다.
 function Carrier(name) {
   this.name = name;
 }
+
 const sk = new Carrier("SK Telecom");
 
 // 사용자 정의 생성자 함수를 통해 생성된 객체는 함수 자체의 prototype 프로퍼티에 바인딩 된 객체를 상속받는다.
@@ -464,14 +466,15 @@ Object.getPrototypeOf(Member.prototype) === Object.prototype; // true
 // [[Prototype]] 내부 슬롯의 참조를 따라서 자신의 부모 역할을 하는 프로토타입의 프로퍼티를 순차적으로 검색한다.
 // 이를 프로토타입 체인이라 하며 이는 자바스크립트가 객체지향 프로그래밍의 상속을 구현하는 메커니즘이다.
 // 프로토타입의 최상위는 항상 Object.prototype이며 이를 프로토타입의 종점(end of prototype chain)이라 한다.
+// 단 주의할 점은 프로타입의 종점에서도 접근하려는 프로퍼티가 없더라도 에러를 발생시키지 않고 undefined를 반환한다.
 
 /**
  * 19-8. 오버라이딩과 프로퍼티 섀도잉
  *
  * 오버라이딩(Overriding)이란 상위 클래스에서 정의된 메서드를 하위 클래스에서 재정의하여 사용하는 방식이다.
  * 이를 통해 하위 클래스에서 상위 클래스의 메서드를 변경하거나 확장하여 사용할 수 있다.
- * 오버라이딩을 통해 기존의 상위 클래스가 가진 property가 하위 클래스에서 동일한 이름의 프로퍼티로 덮어씌워지는 현상을 프로퍼티 섀도잉(Property shadowing)이라 한다.
- * 즉, 하위 클래스에서 상위 클래스의 프로퍼티가 가려지거나 덮어지는 현상을 의미한다.
+ * 오버라이딩을 통해 기존의 상위 클래스가 가진 property가 하위 클래스에서 동일한 이름의 프로퍼티로 덮어씌워지는 현상을 말한다.
+ * 즉, 하위 클래스에서 상위 클래스의 프로퍼티가 가려지거나 덮어지는 현상을 의미하며, 이를 프로퍼티 섀도잉(Property shadowing)이라 한다.
  *
  */
 
@@ -514,3 +517,42 @@ Singer.prototype; // { constructor: f Singer(name) }
 // 이때 프로퍼티 섀도잉이 발생하면, 상위 클래스의 프로퍼티가 하위 클래스에서 덮어씌워지거나 가려진다.
 // 프로퍼티를 삭제할 때에도 하위 클래스에서 상위 클래스의 프로토타입 메서드는 절대 삭제할 수 없으며, 상위 클래스의 프로토타입에 직접 접근하여 삭제해야 한다는 점이다.
 // 즉, 하위 클래스에서 상위 클래스의 메서드를 동일한 이름으로 재정의하여 변경, 확장하여 사용할 수 있지만(오버라이딩), 삭제할 수는 없다.
+
+// ES6 class 키워드를 이용한 예제
+class SingerSongWriter {
+  // constructor(): 클래스 내에서 인스턴스를 초기화하는 메서드
+  constructor(name) {
+    this.name = name;
+  }
+
+  getSingerSongWriterName() {
+    return this.name;
+  }
+}
+
+class PopSingASongWriter extends SingerSongWriter {
+  constructor(name) {
+    // super(): 자식 클래스에서 부모 클래스의 생성자를 호출하는 메서드
+    super(name);
+    this.genre = "POP";
+  }
+
+  getSingerSongWriterName() {
+    return `POP ` + this.name;
+  }
+}
+
+const taylorSwift = new PopSingASongWriter("Taylor Swift");
+
+// 클래스의 프로토타입에 직접 접근하여 삭제해야 한다. 하위 클래스에서는 메서드를 삭제할 수 없다.
+delete PopSingASongWriter.prototype.getSingerSongWriterName;
+delete SingerSongWriter.prototype.getSingerSongWriterName;
+
+/**
+ * 19-9. 프로토타입의 교체
+ *
+ * 프로토타입은 임의의 다른 객체로 변경할 수 있다.
+ * 부모 객체인 프로토타입을 동적으로 변경할 수 있다는 것을 의미하며, 이러한 특징을 활용하여 객체 간의 상속을 동적으로 변경할 수 있다.
+ * 즉, 프로토타입은 생성자 함수 또는 인스턴스에 의해 교체할 수 있다.
+ *
+ */
