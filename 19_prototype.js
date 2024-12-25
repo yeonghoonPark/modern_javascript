@@ -556,3 +556,44 @@ delete SingerSongWriter.prototype.getSingerSongWriterName;
  * 즉, 프로토타입은 생성자 함수 또는 인스턴스에 의해 교체할 수 있다.
  *
  */
+
+// 19-9-1. 생성자 함수에 의한 프로토타입의 교체
+
+function Cigarette(name) {
+  this.name = name;
+}
+
+// `Cigarette` 생성자 함수의 prototype을 객체 리터럴로 할당함
+// 이는 생성자 함수가 미래에 생성할 인스턴스의 constructor 프로퍼티만 가지는 프로토타입을 객체 리터럴 형식으로 교체한 것이다.
+// 상속 관계가 깨지기 때문에 객체 리터럴로 교체하면 constructor가 사라지게 된다.
+// 즉, 프로토타입을 교체하게 되면 객체 인스턴스가 새로운 프로토타입을 참조하게 되어, 기존 프로토타입의 constructor가 새로운 프로토타입 객체로 덮어씌워지기 때문이다.
+Cigarette.prototype = {
+  getName() {
+    return this.name;
+  },
+};
+
+Cigarette.prototype; // { getName: f getName() }, constructor가 존재하지 않는다.
+
+const marlboro = new Cigarette("marlboro");
+
+marlboro.getName();
+
+// prototype을 객체 리터럴로 교체 함으로 상속 관계가 깨짐
+marlboro.constructor === Cigarette; // false
+// marlboro의 constructor는 객체 리터럴 형식의 prototype인 Object를 참조하고 있다.
+marlboro.constructor === Object; // true
+
+// 상속 관계를 복원하기 위해서는 프로토타입을 할당하는 객체 리터럴에 명시적으로 constructor 프로퍼티를 추가하면 된다.
+Cigarette.prototype = {
+  constructor: Cigarette, // constructor를 명시적으로 추가하여 상속 관계 복원
+  getName() {
+    return this.name;
+  },
+};
+
+Cigarette.prototype; // { constructor: f Cigarette(name), getName: f getName() }
+
+// constructor를 추가하여 상속 관계 복원
+marlboro.constructor === Cigarette; // true
+marlboro.constructor === Object; // false
