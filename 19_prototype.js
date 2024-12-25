@@ -558,7 +558,6 @@ delete SingerSongWriter.prototype.getSingerSongWriterName;
  */
 
 // 19-9-1. 생성자 함수에 의한 프로토타입의 교체
-
 function Cigarette(name) {
   this.name = name;
 }
@@ -597,3 +596,80 @@ Cigarette.prototype; // { constructor: f Cigarette(name), getName: f getName() }
 // constructor를 추가하여 상속 관계 복원
 marlboro.constructor === Cigarette; // true
 marlboro.constructor === Object; // false
+
+// 🔑 프로토타입을 객체 리터럴 형식으로 사용하는 이유는,
+// 사용하게 될 프로토타입의 프로퍼티(메서드)들을 하나씩 정의하는 것보다 객체 리터럴을 통해 한 번에 정의할 수 있는 간편함 때문이다.
+// 하지만 상속 관계가 깨지기 때문에 constructor를 명시적으로 기재해줘야 하는 번거로움이 있다.
+// 이에 대한 해결책으로 간편하고 직관적인 class 키워드가 존재한다.
+
+class Marlboro {
+  constructor() {
+    this.name = "marlboro";
+  }
+
+  getName() {
+    return this.name;
+  }
+}
+
+// extends 키워드를 이용하여 상속 관계를 손쉽게 유지할 수 있다.
+class MarlboroMenthol extends Marlboro {
+  constructor() {
+    // 부모 class인 `Marlboro`의 name은 미래에 동적으로 생성할 인스턴스와 관계없이 이미 값이 정해져 있어서 인자가 필요하지 않다.
+    // 즉, 부모 객체에서 고정된 값을 처리할 때 인자가 필요하지 않고 동적으로 변하는 값이라면 인자로 넣어줘야 한다.
+    super();
+    this.flavor = "menthol";
+  }
+}
+
+const marlboroMenthol = new MarlboroMenthol();
+marlboroMenthol.getName(); // marlboro
+
+// 19-9-2. 인스턴스에 의한 프로토타입의 교체
+function Champion(name) {
+  this.name = name;
+}
+
+const gangplank = new Champion("Gangplank");
+const gangplankPrototype = {
+  getName() {
+    return this.name;
+  },
+};
+
+// `gangplank` 객체의 프로토타입을 `gangplankPrototype`으로 교체, 상속 관계가 파괴됨
+// gangplank.__proto__ = gangplankPrototype
+Object.setPrototypeOf(gangplank, gangplankPrototype);
+
+gangplank.__proto__; // { getName: f getName() }, constructor가 존재하지 않는다.
+gangplank.getName(); // Gangplank
+
+// 프로토타입을 교체하였기 때문에 constructor 프로퍼티와 생성자 함수 간의 연결이 파괴됨
+gangplank.constructor === Champion; // false
+// 프로토타입 체인을 따라 Object.prototype의 constructor 프로퍼티를 참조하고 있다.
+gangplank.constructor === Object; // true
+
+// 🔑 프로토타입을 교체할 때 생성자 함수의 프로퍼티를 통해  변경하는 것과 인스턴스(__proto__, setPrototypeOf)를 통해 변경하는 것은 차이가 없어 보인다.
+// 하지만 두 가지 방식의 차이점은 미묘한 차이가 존재한다.
+// 두 방식 모두 constructor가 사라지고 상속 관계가 파괴된다는 점은 동일하다.
+// 하지만, 생성자 함수를 통해 변경할 때는 생성자 함수의 프로토타입 프로퍼티가 직접 프로토타입을 가리키고,
+// 인스턴스를 통해 변경할 때는 생성자 함수의 프로토타입 프로퍼티는 프로토타입을 간접적으로 참조만 하게 된다.
+
+// 상속 관계를 복원하기 위해서는 프로토타입을 할당하는 객체에 명시적으로 constructor 프로퍼티를 추가하면 된다.
+const newGangplankPrototype = {
+  ...gangplankPrototype,
+  constructor: Champion,
+};
+
+// `Champion` 생성자 함수의 프로토타입을 `newGangplankPrototype` 변경
+Champion.prototype = newGangplankPrototype;
+
+// `gangplank` 객체의 프로토타입을 `newGangplankPrototype`으로 교체
+Object.setPrototypeOf(gangplank, newGangplankPrototype);
+
+gangplank.constructor === Champion; // true
+gangplank.constructor === Object; // false
+Champion.prototype === gangplank.__proto__; // true
+
+// 🔑 프로토타입을 직접 변경하여 객체 간의 상속 관계를 변경하는 것은 매우 복잡하고 실수할 여지가 많다.
+// 대신, ES6 `class` 키워드를 사용하면 상속 관계와 `constructor`를 자동으로 관리할 수 있어 훨씬 직관적이고 편리하다.
