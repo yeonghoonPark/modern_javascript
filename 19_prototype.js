@@ -673,3 +673,45 @@ Champion.prototype === gangplank.__proto__; // true
 
 // 🔑 프로토타입을 직접 변경하여 객체 간의 상속 관계를 변경하는 것은 매우 복잡하고 실수할 여지가 많다.
 // 대신, ES6 `class` 키워드를 사용하면 상속 관계와 `constructor`를 자동으로 관리할 수 있어 훨씬 직관적이고 편리하다.
+
+/**
+ * 19-10. instanceOf 연산자
+ *
+ * instanceOf 연산자는 이항 연산자로 좌변에는 객체를 가리키는 식별자, 우변에는 생성자 함수를 가리키는 식별자를 피연산자로 받는다.
+ * 우변의 피연산자는 항상 함수여야 하며, 함수가 아닌 값이 피연산자로 들어간다면 TypeError가 발생한다.
+ *
+ * 객체 instanceOf 생성자 함수(class 포함)
+ *
+ * 우변의 생성자 함수의 prototype에 바인딩된 객체가 좌변 객체의 프로토타입 체인 상에 존재하면 true, 아니라면 false로 평가된다.
+ *
+ */
+
+function Animal(name) {
+  this.name = name;
+}
+
+const dog = new Animal("Dog");
+
+// `Animal.prototype`이 `dog`의 프로토타입 체인 상에 존재하므로 `true`로 평가된다.
+dog instanceof Animal; // true
+// `Object.prototype`이 `dog`의 프로토타입 체인 상에 존재하므로 `true`로 평간된다.
+dog instanceof Object; // true
+
+// 프로토타입을 교체할 경우, `Animal.prototype`을 객체 리터럴로 재할당 (상속 관계 파괴)
+Animal.prototype = {};
+
+// `Animal.prototype`을 재할당하고 `cat` 인스턴스 생성
+const cat = new Animal("Cat");
+// 상속 관계가 파괴되어 `constructor` 프로퍼티와 생성자 함수 간의 연결이 끊어짐
+cat.constructor === Animal; // false
+
+// ❗️ 주의.
+// 상속 관계가 파괴되어 `constructor` 프로퍼티와 생성자 함수 간의 연결이 끊어지더라도 `instanceOf` 연산자는 영향을 받지 않는다.
+// 즉, `Animal.prototype`을 교체하여 `constructor`가 사라져 상속 관계가 파괴되었지만, 프로토타입 체인 상에는 `Animal.prototype`이 존재한다.
+cat instanceof Animal; // true
+cat.__proto__ === Animal.prototype; // true
+
+cat instanceof Object; // true
+cat.__proto__.__proto__ === Object.prototype; // true
+
+// 🔑 즉, `instanceOf` 연산자는 좌항의 객체의 프로토타입 체인 상에 우항의 생성자 함수(class 포함)의 프로토타입이 존재 여부만을 평가한다.
