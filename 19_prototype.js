@@ -722,3 +722,74 @@ cat.__proto__.__proto__ === Object.prototype; // true
  * 프로토타입을 직접 상속할 때, `Object.create` 메서드 또는 객체 리터럴 내부에서 __proto__를 이용하는 방법이 있다.
  *
  */
+
+// 19-11-1. `Object.create` 를 이용한 직접 상속
+// `Object.create` 메서드의 첫 번째 매개변수는 생성할 객체의 프로토타입으로 지정할 객체를 전달한다.
+// 두 번째 매개변수는 생성할 객체의 프로퍼티 키와 프로퍼티 디스크립터 객체로 이뤄진 객체를 전달한다.
+// (두 번째 매개변수는 `Object.defineProperties` 메서드의 두 번째 인자와 동일하며 옵션이므로 생략 가능하다.)
+// 즉, Object.create 메서드를 통해 객체를 생성할 때도 추상 연산(OrdinaryObjectCreate)이 호출되며,
+// 이때 추상 연산의 인자로 Object.create 메서드의 첫 번째 인자가 전달된다.
+
+// 첫 번째, 두 번째 인자를 생략할 경우 TypeError가 발생한다, 첫 번째 인자는 항상 객체 또는 null을 전달해야 한다.
+// 만약 객체가 아닌 null을 전달하는 경우 프로토타입의 종점이 null이 된다.
+const createdObj = Object.create(null);
+Object.getPrototypeOf(createdObj); // null
+Object.getPrototypeOf(createdObj) === null; // true
+createdObj.__proto__; // undefined
+createdObj instanceof Object; // false
+
+// `Object.prototype`이 종점이 아니기 때문에 Object로부터 메서드들을 상속받을 수 없다.
+// createdObj.toString(); // TypeError: createObj.toString is not a function at ~
+
+// const createdObj2 = {}; 와 동일
+const createdObj2 = Object.create(Object.prototype);
+Object.getPrototypeOf(createdObj2) === Object.prototype; // true
+createdObj2.__proto__ === Object.prototype; // true
+createdObj2 instanceof Object; // true
+
+// const createdObj3 = { x: 1 }; 과 동일
+const createdObj3 = Object.create(Object.prototype, {
+  x: { configurable: true, enumerable: true, value: 1, writable: true },
+});
+
+const tempProto = { x: 1 };
+const createdObj4 = Object.create(tempProto);
+createdObj4.__proto__ === tempProto; // true
+
+function TempProto() {
+  this.name = "Temporary Prototype";
+}
+const createdObj5 = Object.create(TempProto.prototype);
+createdObj5.__proto__ === TempProto.prototype;
+createdObj5.__proto__.__proto__ === Object.prototype;
+
+// `Object.create` 메서드를 이용하면 프로토타입을 직접 설정하여 상속할 수 있다.
+// 해당 메서드의 장점은 다음과 같다.
+// 1. new 연산자 없이 객체를 생성할 수 있다.
+// 2. 프로토타입을 지정하면서 동시에 객체를 생성할 수 있다.
+// 3. 객체 리터럴에 의해 생성될 객체도 프로토타입을 직접 상속받을 수 있다.
+
+// 프로토타입의 직접 상속으로 객체를 인자로 넘기는 경우, 집적 상속 받는 객체의 프로토타입이 `Object.prototype`으로 설정된다.
+const createdObj6 = Object.create({});
+createdObj6.__proto__; // {}
+createdObj6.__proto__.__proto__ === Object.prototype; // true
+createdObj6 instanceof Object; // true
+
+// `Object.prototype`의 메서드들을 모두 사용할 수 있다.
+createdObj6.hasOwnProperty("x"); // false
+
+// 하지만 ESLint에서는 위의 예제와 같이 `Object.prototype`의 빌트-인 메서드를 객체가 직접 호출하는 것을 권장하지 않는다.
+// 왜냐하면 `Object.create` 메서드는 프로토타입의 종점에 위치하는 객체를 생성할 수 있기 때문이다. (ex: null)
+// 프로토타입의 종점에 위치하는 객체는 `Object.prototype`의 메서드들을 사용할 수 없기 때문이다.
+const createdObj7 = Object.create(null); // prototype의 종점을 null로 설정
+createdObj7.x = 1;
+createdObj7; // {x: 1}, [[Prototype]] 내부 슬롯이 존재하지 않는다. 즉 __proto__로 접근이 불가능하다.
+createdObj7.__proto__; // undefined
+// createdObj7.hasOwnProperty("x"); // TypeError: createdObj7.hasOwnProperty is not a function at ~
+
+// 따라서 직접 상속 받는 프로토타입 또는 바로 상위의 프로토타입이 `Object.prototype`이 아니라면 간접적으로 호출하는게 좋다.
+Object.prototype.hasOwnProperty.call(createdObj7, "x"); // true
+
+// 🔑 `Object.create`는 프로토타입을 명시적으로 설정하고자 할 때, 프로토타입 체인을 세밀하게 제어할 때 유용하다.
+// null을 프로토타입으로 설정하여 상속 관계를 완전히 끊고, 단순한 속성만을 다룰 때도 좋다.
+// 다만 대부분의 경우 객체 리터럴, 클래스, 생성자 함수가 더 직관적이고 간편하다.
