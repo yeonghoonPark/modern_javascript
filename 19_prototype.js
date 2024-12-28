@@ -715,3 +715,10 @@ cat instanceof Object; // true
 cat.__proto__.__proto__ === Object.prototype; // true
 
 // 🔑 즉, `instanceOf` 연산자는 좌항의 객체의 프로토타입 체인 상에 우항의 생성자 함수(class 포함)의 프로토타입이 존재 여부만을 평가한다.
+
+/**
+ * 19-11. 직접 상속
+ *
+ * 프로토타입을 직접 상속할 때, `Object.create` 메서드 또는 객체 리터럴 내부에서 __proto__를 이용하는 방법이 있다.
+ *
+ */
