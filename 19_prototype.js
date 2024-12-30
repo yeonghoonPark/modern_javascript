@@ -793,3 +793,36 @@ Object.prototype.hasOwnProperty.call(createdObj7, "x"); // true
 // 🔑 `Object.create`는 프로토타입을 명시적으로 설정하고자 할 때, 프로토타입 체인을 세밀하게 제어할 때 유용하다.
 // null을 프로토타입으로 설정하여 상속 관계를 완전히 끊고, 단순한 속성만을 다룰 때도 좋다.
 // 다만 대부분의 경우 객체 리터럴, 클래스, 생성자 함수가 더 직관적이고 간편하다.
+
+// 19-11-2. 객체 리터럴 내부에서 __proto__에 의한 직접 상속
+// ES6에서는 객체 리터럴 내부에서 `__proto__` 접근자 프로퍼티를 사용하여 직접 상속을 구현할 수 있다.
+
+// 프로토타입으로 이용할 객체 선언
+const testObjProto = {
+  getNumberOne() {
+    return 1;
+  },
+};
+
+// 객체 리터럴 내부에서 `__proto__` 접근자 프로퍼티를 이용한 직접 상속
+const testObj = {
+  name: "Test-Object",
+  __proto__: testObjProto,
+};
+Object.getPrototypeOf(testObj) === testObjProto; // true
+
+// 위의 `__proto__`를 이용하여 직접 상속을 구현한 코드를 `Object.create`메서드를 이용하면 다음과 동일하다.
+const testObj2 = Object.create(testObjProto, {
+  name: {
+    configurable: true,
+    enumerable: true,
+    value: "Test-Object",
+    writable: true,
+  },
+});
+Object.getPrototypeOf(testObj2) === testObjProto; // true
+
+// 🔑 `__proto__` 접근자 프로퍼티는 ECMAScript5.1 이후 표준화되었지만, 사용을 권장하지 않는다.
+// 성능상의 문제나 코드의 가독성 측면에서 사용하지 않는 것이 일반적이다.
+// 프로토타입 체인을 세밀하게 제어할 필요가 있어 직접 상속을 구현해야 한다면 `Object.create`가 더 나은 선택이다.
+// 다만, 꼭 프로토타입 체인을 세밀하게 제어할 필요가 없다면 자바스크립트가 암묵적으로 바인딩해주는 프로토타입을 사용하는 것이 직관적이고 편리하다.
