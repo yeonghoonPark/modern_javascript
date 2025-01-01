@@ -864,13 +864,48 @@ const sm5 = new Car("SM5");
 // 생성자 함수에 추가한 정적 프로퍼티/메서드는 생성자 함수로 참조/호출한다.
 Car.staticMethod(); // static method
 
-// 정적 프로퍼티/메서드는 생성자 함수가 생성한 인스턴스로는 참조/호출할 수 없다.
+// ❗️ 정적 프로퍼티/메서드는 생성자 함수가 생성한 인스턴스로는 참조/호출할 수 없다.
 // 즉, 인스턴스가 참조/호출할 수 있는 프로퍼티/메서드는 항상 프로토타입 체인 상에 존재해야만 한다.
 // sm5.staticMethod(); // TypeError: sm5.staticMethod is not a function at ~
 
 // 🔑 정적 프로퍼티/메서드란, 함수 객체에 추가한 프로퍼티/메서드를 의미한다.
-// 이는 프로포타입 체인 상에 추가한 것이 아닌 함수 객체 자체에 추가한 프로퍼티/메서드이다.
+// 이는 프로포타입의 프로퍼티 또는 프로토타입 체인 상에 추가한 것이 아닌 함수 객체 자체에 추가한 프로퍼티/메서드이다.
 // 미래에 생성할 인스턴스와는 관계없이 오직 함수 자체만 호출할 수 있으며 인스턴스는 참조/호출할 수 없다.
 // 생성된 인스턴스는 프로토타입 체인 상에 존재하는 프로퍼티/메서드만을 참조/호출할 수 있다.
 // 즉, 정적 프로퍼티/메서드는 생성자 함수 자체에 정의되어 있고, 인스턴스에서는 접근할 수 없다.
 // 반면, 프로토타입 메서드는 인스턴스에서 호출할 수 있다.
+
+/**
+ * 19-13. 프로퍼티 존재 확인
+ *
+ */
+
+// 19-13-1. in 연산자
+// `in` 연산자는 객체 내에 특정 프로퍼티가 존재하는지 여부를 확인한다.
+// key in object
+
+const monitorInfo = { brand: "SamSung" };
+
+// `monitorInfo` 객체에 `brand` 프로퍼티 키가 존재함
+"brand" in monitorInfo; // true
+
+// `monitorInfo` 객체에 `asPeriod` 프로퍼티 키가 존재하지 않음
+"asPeriod" in monitorInfo; // false
+
+// ❗️ `in` 연산자는 객체의 프로퍼티 키뿐만 아니라 프로토타입 체인 상에 상속받은 프로토타입의 프로퍼티 키도 포함하기 때문에 주의가 필요하다.
+"hasOwnProperty" in monitorInfo; // true (프로토타입 체인 상에서 상속받은 프로퍼티)
+
+// `in` 연산자 대신에 ES6에서 도입된 `Reflect.has` 메서드를 이용할 수도 있다. (`in` 연산자와 동일, 프로토타입의 프로퍼티 키도 포함)
+Reflect.has(monitorInfo, "brand"); // true
+Reflect.has(monitorInfo, "asPeriod"); // false
+Reflect.has(monitorInfo, "hasOwnProperty"); // true
+
+// 19-13-2. Object.prototype.hasOwnProperty 메서드
+Object.prototype.hasOwnProperty.call(monitorInfo, "brand"); // true
+
+// `hasOwnProperty` 메서드의 장점은 프로토타입의 프로퍼티 키는 포함하지 않고, 객체의 고유한 프로퍼티 키만을 대상으로 삼는다는 점이다.
+Object.prototype.hasOwnProperty.call(monitorInfo, "hasOwnProperty"); // false
+
+// 🔑 객체의 고유한 프로퍼티 키의 존재를 확인할 때는 `in` 연산자보다는 `hasOwnProperty` 메서드를 사용하는 것이 좋다.
+// `hasOwnProperty` 메서드는 프로토타입 체인 상의 프로퍼티는 포함하지 않고 객체 자체의 고유한 프로퍼티만 확인할 수 있다.
+// 프로토타입 체인 상의 프로퍼티 키까지 확인하는 경우에만 `in` 연산자를 사용하는 것이 좋다.
