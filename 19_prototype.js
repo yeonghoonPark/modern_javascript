@@ -112,7 +112,7 @@ circle5.getDiameter === circle6.getDiameter; // true
  * 프로토타입은 어떤 객체의 상위(부모) 객체의 역할을 하는 객체로서 하위(자식) 객체에 공유 프로퍼티와 메서드를 제공한다.
  * 프로토타입을 상속받은 하위(자식) 객체는 상위(부모) 객체의 공유 프로퍼티와 메서드를 자유롭게 사용할 수 있다.
  *
- * 모든 객체는 [[Prototype]]이란 내부 슬롯을 가지며, 이 내부 슬롯의 값은 프로토타입 객체의 참조다. (null인 경우도 있다 👉 Object.create())
+ * 모든 객체는 [[Prototype]]이란 내부 슬롯을 가지며, 이 내부 슬롯의 값은 프로토타입 객체의 참조다. (null인 경우도 있다 👉 Object.create(null))
  * [[Prototype]]의 내부 슬롯 값은 객체의 생성 방식에 의해 결정된다. 즉, 객체가 생성될 때 그 방식에 따라 자동으로 결정된다.
  * 예를 들어, 객체 리터럴의 의해 생성된 객체의 프로토타입은 Object.prototype이고 생성자 함수에 의해 생성된 객체의 프로토타입은 생성자 함수의 prototype 프로퍼티 객체다.
  *
@@ -161,9 +161,8 @@ child.__proto__ = parent;
 // 상호 양방으로 프로토타입 체인이 걸리기 때문에 TypeError가 발생한다. 즉, 프로토타입 체인은 단 방향으로 체결되어야 한다.
 // parent.__proto__ = child; // Uncaught TypeError: Cyclic __proto__ value at set __proto__
 
-// 🔑 __proto__ 접근자 프로퍼티를 코드 내에서 직접 사용하는 것은 권장하지 않는다.
-// 🔑 이유는 Object.prototype을 상속받지 않는 객체가 존재하기 때문이다.
-// 예를 들면 객체 생성과 프로토타입을 동시에 지정하는 Object.create() 메서드가 있다. (프로토타입은 객체 생성 방식에 따라 정해지기 때문)
+// 🔑 __proto__ 접근자 프로퍼티를 코드 내에서 직접 사용하는 것은 권장하지 않는다. Object.prototype을 상속받지 않는 객체가 존재하기 때문이다.
+// 예를 들면 객체 생성과 프로토타입을 동시에 지정하는 Object.create 메서드가 있다. (프로토타입은 객체 생성 방식에 따라 정해지기 때문)
 const obj = Object.create(null); // Object.create(object | null)는 객체를 생성하고 해당 객체의 prototype을 설정하는 메서드이다.
 obj.__proto__; // undefined, 프로토타입을 null 값으로 지정했기 때문에 Object.prototype을 상속받을 수 없어 undefined가 출력된다.
 
@@ -200,7 +199,6 @@ foo.hasOwnProperty("prototype"); // true
 // arrow function, 일반 객체, ES6 축약 메서드 즉, non-constructor는 prototype을 소유하지 않는다.
 const bar = () => {};
 bar.hasOwnProperty("prototype"); // false
-({}).hasOwnProperty("prototype"); // false
 
 // 모든 객체가 가지는 __proto__(Object.prototype)과 생성자 함수의 객체가 가지는 prototype 프로퍼티는 동일한 프로토타입을 의미한다.
 function Banana() {
@@ -335,7 +333,7 @@ const ArrowFunc = (name) => {
 ArrowFunc(); // new 키워드를 사용하면, TypeError: ArrowFunc is not a constructor
 console.log(ArrowFunc.prototype); // undefined
 
-// 위의 `ConstructFunc` 함수의 프로퍼티인 프로토타입은 객체이며 생성 시점에는 constructor 프로퍼티만 가지는 객체이다. (나중에 추가할 수 있다)
+// 위의 `DeclarationFunc` 함수의 프로퍼티인 프로토타입은 객체이며 생성 시점에는 constructor 프로퍼티만 가지는 객체이다. (나중에 추가할 수 있다)
 // 결국 constructor 프로퍼티도 객체이기 때문에 프로토타입이 필요하고 이는 Object.prototype과 프로토타입체인 된다.
 // 🔑 즉, 사용자 정의 함수의 프로토타입은 호이스팅에 의해 run-time 이전에 정의 되고 호출 시점에 Object.prototype과 바인딩되어 생성된다.
 // 사용자 정의 함수에 의해 생성된 객체는 `사용자 정의 함수.prototype`에 바인딩되고, 해당 프로토타입은 `Object.prototype`에 바인딩되는 형식으로 프로토타입체이닝이 이뤄진다. (Object.prototype은 가장 최상위 프로토타입이다)
@@ -882,7 +880,7 @@ Car.staticMethod(); // static method
 
 // 19-13-1. in 연산자
 // `in` 연산자는 객체 내에 특정 프로퍼티가 존재하는지 여부를 확인한다.
-// key in object
+// 문법: key in object
 
 const monitorInfo = { brand: "SamSung" };
 
@@ -909,3 +907,117 @@ Object.prototype.hasOwnProperty.call(monitorInfo, "hasOwnProperty"); // false
 // 🔑 객체의 고유한 프로퍼티 키의 존재를 확인할 때는 `in` 연산자보다는 `hasOwnProperty` 메서드를 사용하는 것이 좋다.
 // `hasOwnProperty` 메서드는 프로토타입 체인 상의 프로퍼티는 포함하지 않고 객체 자체의 고유한 프로퍼티만 확인할 수 있다.
 // 프로토타입 체인 상의 프로퍼티 키까지 확인하는 경우에만 `in` 연산자를 사용하는 것이 좋다.
+
+/**
+ * 19-14. 프로퍼티 열거
+ *
+ */
+
+// 19-14-1. for...in 문
+// 객체의 프로퍼티를 순회하며 처음부터 끝까지 열거(enumerable)한다.
+// 문법: for 변수 선언문 in 객체
+{
+  // 객체 리터럴로 객체 선언, 해당 객체의 프로토타입은 `Object.prototype`이다.
+  const personKim = {
+    name: "Kim",
+    address: "Seoul",
+  };
+
+  // `Object.prototype`에서 상속받은 프로토타입의 프로퍼티 `toString`
+  "toString" in personKim; // true
+
+  for (const key in personKim) {
+    key; // name, address
+    personKim[key]; // Kim, Seoul
+  }
+
+  // `for...in` 문 역시 `in` 연산자를 사용하기 때문에 객체의 고유한 프로퍼티뿐 아니라 프로토타입 체인 상의 모든 프로퍼티 키를 열거한다.
+  // 하지만 `person` 객체의 프로토타입인  `Object.prototype`의 프로퍼티인 `toString`은 열거되지 않았다.
+  // 이유는 `Object.prototype`의 모든 프로퍼티들은 프로퍼티 어트리뷰트인 `[[Enumerable]]`의 값이 `false`이기 때문이다.
+  console.log(Object.getOwnPropertyDescriptors(Object.prototype));
+
+  // `for...in` 문은 `[[Enumerable]]`의 값이 `true`인 프로퍼티에 한해 객체 고유의 프로퍼티뿐만 아니라 모든 프로토타입 체인 상의 프로퍼티를 열거한다.
+
+  // `Object.create` 메서드를 이용해 프로토타입을 직접 상속하면 프로토타입의 프로퍼티인 `sayHello`가 열거된다. (`enumerable`의 값이 `true`이다)
+  const personPark = Object.create(
+    {
+      sayHello() {
+        console.log(`Hi, I'm ${this.name}`);
+      },
+    },
+    {
+      name: {
+        configurable: true,
+        enumerable: true,
+        value: "Park",
+        writable: true,
+      },
+    }
+  );
+
+  // `personPark.__proto__`에서 상속받은 프로토타입의 프로퍼티 `sayHello`
+  "sayHello" in personPark; // true
+
+  for (const key in personPark) {
+    key; // name, sayHello
+    personPark[key]; // Park, f sayHello() ~
+  }
+
+  // `for...in` 문을 통해 객체의 고유한 프로퍼티만을 열거하기 위해서는 `hasOwnProperty` 메서드를 활용
+  for (const key in personPark) {
+    // 객체의 고유 프로퍼티가 아닌 경우 `continue`
+    if (!Object.prototype.hasOwnProperty.call(personPark, key)) {
+      continue;
+    }
+
+    key; // name
+    personPark[key]; // Park
+  }
+
+  // `Symbol` 함수로 정의된 심벌 키 또한 열거되지 않는다.
+  const symbolKey = Symbol();
+  const personDavid = {
+    name: "David",
+    [symbolKey]: "symbolKey",
+  };
+
+  for (const key in personDavid) {
+    key; // name
+    personDavid[key]; // David
+  }
+
+  // `for...in` 문은 숫자(실제로는 문자)에 대해서는 순서를 보장하지 않고 정렬한다.
+  const alphabet = {
+    2: 2,
+    1: 1,
+  };
+
+  for (const key in alphabet) {
+    if (Object.prototype.hasOwnProperty.call(alphabet, key)) {
+      key; // 1, 2
+    }
+  }
+
+  // ❗️ 배열도 객체이기 때문에 `for...in` 문을 사용할 수 있다. 하지만 권장하지 않는다.
+  // `for`, `for...of`, `forEach`를 권장한다.
+  const arr = [1, 2, 3];
+  arr.x = 4;
+  arr; // [1, 2, 3, x: 4]
+
+  // 배열에서 `for..in` 문은 변수에 `index`를 할당한다.
+  for (const key in arr) {
+    if (Object.prototype.hasOwnProperty.call(arr, key)) {
+      key; // 0, 1, 2, x
+      arr[key]; // 1, 2, 3, 4
+    }
+  }
+
+  // `for...of` 문은 프로퍼티를 제외하고 변수에 값을 할당한다.
+  for (const value of arr) {
+    value; // 1, 2, 3
+  }
+
+  // 🔑 `for...in` 문은 객체 고유의 프로퍼티와 프로토타입 체인 상의 프로퍼티 중 `[[Enumerable]]`의 값이 `true`인 모든 프로퍼티들을 열거한다.
+  // 객체 고유의 프로퍼티를 열거할 땐 `hasOwnProperty`메서드를 같이 활용하는 것이 좋다.
+  // 단, 배열에서는 사용하지 않는 것을 권장하며 배열의 경우에는 `for...of` 문 또는 `forEach` 메서드를 활용하는 것이 좋다.
+}
