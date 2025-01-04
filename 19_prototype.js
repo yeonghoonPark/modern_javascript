@@ -1018,6 +1018,22 @@ Object.prototype.hasOwnProperty.call(monitorInfo, "hasOwnProperty"); // false
   }
 
   // 🔑 `for...in` 문은 객체 고유의 프로퍼티와 프로토타입 체인 상의 프로퍼티 중 `[[Enumerable]]`의 값이 `true`인 모든 프로퍼티들을 열거한다.
-  // 객체 고유의 프로퍼티를 열거할 땐 `hasOwnProperty`메서드를 같이 활용하는 것이 좋다.
+  // 객체 고유의 프로퍼티를 열거할 땐 `hasOwnProperty` 메서드를 같이 활용하는 것이 좋다.
   // 단, 배열에서는 사용하지 않는 것을 권장하며 배열의 경우에는 `for...of` 문 또는 `forEach` 메서드를 활용하는 것이 좋다.
+}
+
+// 19-14-2. Object.keys/values/entries
+// 객체 고유의 프로퍼티를 열거할 목적이라면 `for...in` 문을 사용할 경우에 `hasOwnProperty` 메서드를 활용하여 처리를 해주어야 한다.
+// 이런 번거로움이 없는 `Object.keys/values/entries` 메서드를 활용하는 것을 권장한다.
+{
+  const person = { name: "Kim" };
+
+  // `Object.keys`, 객체 자신의 열거 가능한 프로퍼티 키를 배열로 반환한다.
+  Object.keys(person); // ['name']
+
+  // `Object.values`, 객체 자신의 열거 가능한 프로퍼티 밸류를 배열로 반환한다.
+  Object.values(person); // ['Kim']
+
+  // `Object.entries`, 객체 자신의 열거 가능한 프로퍼티 키와 밸류 쌍의 배열을 배열로 반환한다.
+  Object.entries(person); // [['name', 'Kim']]
 }
