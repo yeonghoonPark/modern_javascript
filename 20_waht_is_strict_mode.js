@@ -50,3 +50,47 @@ function bar() {
  * `strict mode` + `즉시 실행 함수`의 조합은 과거의 코드나 서드파티 라이브러리와의 호환성을 피하고 싶을 때 유용하다.
  *
  */
+
+/**
+ * 20-5. strict mode가 발생시키는 에러
+ *
+ * 1. 암묵적 전역(implicit global)
+ * 2. 변수, 함수, 매개변수의 삭제
+ * 3. 매개변수 이름의 중복
+ * 4. `with`문 사용
+ *
+ */
+
+// 20-5-1. 암묵적 전역
+(function () {
+  "use strict";
+  // y = 1; // 🚨 ReferenceError: y is not defined ~
+})();
+
+// 20-5-2. 변수, 함수, 매개변수의 삭제 (`delete` 연산자로 변수, 함수, 매개변수 삭제 시 에러 발생)
+(function () {
+  "use strict";
+  var x = 1;
+  // delete x; // 🚨 SyntaxError: Delete of an unqualified identifier in strict mode. ~
+
+  function bar(a) {
+    // delete a // 🚨 SyntaxError: Delete of an unqualified identifier in strict mode. ~
+  }
+
+  // delete bar // 🚨 SyntaxError: Delete of an unqualified identifier in strict mode. ~
+})();
+
+// 20-5-3. 매개변수 이름의 중복
+(function () {
+  "use strict";
+  // 🚨 SyntaxError: Duplicate parameter name not allowed in this context ~
+  // function bar(x, x) {
+  //   return x + x;
+  // }
+})();
+
+// 20-5-4. with 문의 사용
+(function () {
+  "use strict";
+  // with ({ x: 1 }) { } // 🚨 SyntaxError: Strict mode code may not include a with statement
+})();
