@@ -94,3 +94,41 @@ function bar() {
   "use strict";
   // with ({ x: 1 }) { } // 🚨 SyntaxError: Strict mode code may not include a with statement
 })();
+
+/**
+ * 20-6. strict mode 적용에 의한 변화
+ *
+ * 1. 일반 함수의 this
+ * 2. arguments 객체
+ *
+ */
+
+// 20-6-1. 일반 함수의 this
+// 생성자 함수로 사용이 가능한 [[Construct]] 내부 슬롯을 가진 `function declaration`, `function expression`의 경우
+// `strict mode`와 `non strict`에서의 `this` 바인딩이 다르다.
+// `strict mode`
+//  - new 키워드가 없을 경우: undefined
+//  - new 키워드가 있을 경우: 생성될 인스턴스
+// `non strict`
+//  - new 키워드가 없을 경우: 전역 객체
+//  - new 키워드가 있을 경우: 생성될 인스턴스
+
+(function () {
+  "use strict";
+  function foo() {
+    console.log(this); // undefined
+  }
+  foo();
+
+  function Bar() {
+    console.log(this); // Bar {}
+  }
+  new Bar();
+})();
+
+// 20-6-2. arguments 객체
+(function (a) {
+  "use strict";
+  a = 2;
+  console.log(arguments); // `strict mode`: {0: 1, length: 1} , `non-strict`: {0: 2, length: 1}
+})(1);
