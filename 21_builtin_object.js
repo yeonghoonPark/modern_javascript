@@ -389,3 +389,42 @@ parseInt("10", 16); // 16
   // `decodeURIComponent` 메서드는 이스케이프 처리된 문자열을 인수로 받아 "?", "=", "&", "/", "#" 를 포함한 모든 특수 문자열을 이스케이프 처리 이전으로 디코딩해 반환한다.
   const decodedComponent = decodeURIComponent(encodedComponent); // best+of+funny & 영상
 }
+
+// 21-4-3. 암묵적 전역
+// 암묵적 전역은 non-strict 모드 일 때, 함수 내에서 선언하지 않은 식별자에 값을 할당할 경우 발생한다.
+// non-strict 모드에서는 ReferenceError가 발생하지 않으며, 선언 키워드 없이 값을 할당한 식별자는 전역 객체의 프로퍼티가 된다.
+
+const numberTen = 10;
+
+const implicitGlobal = () => {
+  // 선언하지 않은 식별자 `numberFive`에 5를 할당, 이때 `numberFive`는 동적으로 전역 객체의 프로퍼티가 된다.
+  // `numberFive`는 전역 변수가 아닌 전역 객체의 프로퍼티이기 때문에 삭제가 가능하다.
+  numberFive = 5;
+};
+
+implicitGlobal();
+
+numberTen + numberFive; // 15
+
+// 전역 객체의 프로퍼티인 `numberFive` 삭제
+delete numberFive;
+
+// numberTen + numberFive; // ReferenceError: numberFive is not defined at ~
+
+// 전역 변수는 호이스팅되고 전역 객체의 프로퍼티는 호이스팅되지 않는다.
+globalFive; // undefined
+// globalTen; // ReferenceError: globalTen is not defined at ~
+
+var globalFive = 5;
+window.globalTen = 10;
+
+// 전역 변수는 삭제할 수 없고, 전역 객체의 프로퍼티는 삭제할 수 있다.
+delete globalFive;
+delete globalTen;
+
+globalFive; // 5
+// globalTen; // ReferenceError: globalTen is not defined at ~
+
+// 🔑 암묵적 전역은 코드의 예측성이 떨어지고 디버깅을 어렵게 만들기에 지양하는 것이 좋다
+// 'use strict' 모드를 사용하여 이러한 문제를 방지하는 것이 좋다.
+// `function`, `var` 키워드 사용을 피하고 `let`, `const` 키워드를 사용하자
