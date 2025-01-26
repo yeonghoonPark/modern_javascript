@@ -61,3 +61,51 @@ const insect = {
     return this.name; // Fly, (ES6 축약 메서드는 객체 자신을 가리킴)
   },
 };
+
+/**
+ * 22-2. 함수 호출 방식과 this 바인딩
+ *
+ * `this` 바인딩은 함수 호출 방식, 즉 함수가 어떻게 호출되었는지에 따라 동적으로 결정된다.
+ *
+ * ❗️ 렉시컬 스코프와 this 바인딩은 결정 시기가 다르다.
+ * 함수의 상위 스코프를 결정하는 방식인 렉시컬 스코프는 함수가 어디서 호출되었냐가 아닌 함수가 어디서 정의되었냐에 따라 스코프의 유효 범위를 결정하는 방식이다.
+ * 즉 함수 정의가 평가되어 객체가 생성되는 시점에 상위 스코프를 결정하는 반면 `this`의 참조 값은 함수 호출 시점에 결정된다.
+ *
+ * 함수 호출 방식은 크게 4가지로 분류한다.
+ *
+ * 1. 일반 함수 호출 (function declaration, function expression)
+ * 2. 메서드 호출
+ * 3. 생성자 함수 호출
+ * 4. Function.prototype.apply/call/bind 메서드에 의한 간접 호출
+ *
+ */
+
+{
+  // `this`는 함수 호출 방식에 따라 동적으로 결정된다.
+  const foo = function () {
+    // "use strict";
+    console.log(this);
+  };
+
+  // 1. 일반 함수 호출, 항상 최상위 객체인 `window`를 참조한다. (단 strict 모드에서는 `undefined`를 참조한다.)
+  foo(); // window
+
+  // 2. 메서드 호출, 객체 자신을 참조한다.
+  const bar = { foo };
+  bar.foo(); // obj, { foo: f }
+
+  // 3. 생성자 함수 호출, 미래에 생성될 인스턴스를 참조한다.
+  new foo(); // {}
+
+  // 4. Function.prototype.apply/call/bind 메서드에 의한 간접 호출, `foo` 함수의 `this`는 인자에 의해 결정된다.
+  const student = { name: "Alice" };
+  foo.apply(student); // student
+  foo.call(student); // student
+  foo.bind(student)(); // student
+
+  // ❗️ 단, 화살표 함수의 경우 인자와 관계없이 `this`는 항상 상위 스코프를 참조한다.
+  const arrowFunc = () => console.log(this);
+  arrowFunc.apply(student); // window
+  arrowFunc.call(student); // window
+  arrowFunc.bind(student)(); // window
+}
