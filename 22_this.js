@@ -84,7 +84,7 @@ const insect = {
   // `this`는 함수 호출 방식에 따라 동적으로 결정된다.
   const foo = function () {
     // "use strict";
-    console.log(this);
+    this;
   };
 
   // 1. 일반 함수 호출, 항상 최상위 객체인 `window`를 참조한다. (단 strict 모드에서는 `undefined`를 참조한다.)
@@ -104,8 +104,103 @@ const insect = {
   foo.bind(student)(); // student
 
   // ❗️ 단, 화살표 함수의 경우 인자와 관계없이 `this`는 항상 상위 스코프를 참조한다.
-  const arrowFunc = () => console.log(this);
+  const arrowFunc = () => this;
   arrowFunc.apply(student); // window
   arrowFunc.call(student); // window
   arrowFunc.bind(student)(); // window
 }
+
+// 22-2-1. 일반 함수 호출
+// 👉 기본적으로 중첩 함수까지 모든 `this`에는 전역 객체가 바인딩된다. (단 strict 모드에서는 `undefined`가 바인딩된다)
+function qux() {
+  // 'use strict'
+  this; // window, (strict 모드 시 undefined)
+
+  function quux() {
+    this; // window, (strict 모드 시 undefined)
+  }
+
+  quux();
+}
+
+qux();
+
+// ❗️ 메서드 내에서 정의한 중첩 함수가 일반 함수로 호출된다면 `this`는 전역 객체가 바인딩 된다.
+// 전역 변수
+var value = 1;
+
+{
+  const obj = {
+    value: 100,
+    getValue() {
+      console.log(this); // obj
+      console.log(this.value); // 100
+
+      // 메서드 내에서 중첩 함수가 일반 함수로 호출된다면 `this`는 전역 객체가 바인딩 된다.
+      function getThis() {
+        console.log(this); // window
+        console.log(this.value); // 1
+      }
+
+      // 메서드 내에서 콜백 함수가 일반 함수로 호출된다면 `this`는 전역 객체가 바인딩 된다.
+      setTimeout(function () {
+        console.log(this); // window
+        console.log(this.value); // 1
+      });
+
+      getThis();
+    },
+  };
+
+  obj.getValue();
+}
+
+// 👉 위와 같은 문제를 해결하기 위해서는 `this`를 객체 자신을 참조하는 식별자로 바꿔주거나 화살표 함수를 사용할 수 있다.
+{
+  const obj = {
+    value: 100,
+    getValue() {
+      console.log(this); // obj
+      console.log(this.value); // 100
+
+      // `this` 바인딩을 `that`에 할당
+      const that = this;
+
+      // 메서드 내에서 중첩 함수가 일반 함수로 호출할 때, 함수 내의 `this`가 아닌 상위 스코프의 `this`를 참조하는 `that`을 사용한다.
+      function getThat() {
+        console.log(that); // obj
+        console.log(that.value); // 100
+      }
+
+      // 메서드 내에서 중첩 함수를 화살표 함수로 호출하여 `this`가 상위 스코프(`obj`)의 `this`를 참조하도록 한다.
+      const getThis = () => {
+        console.log(this); // obj
+        console.log(this.value); // 100
+      };
+
+      // 메서드 내에서 콜백 함수를 화살표 함수로 호출하여 `this`가 상위 스코프(`obj`) `this`를 참조하도록 한다.
+      setTimeout(() => {
+        console.log(this); // obj
+        console.log(this.value); // 100
+      });
+
+      // 명시적으로 `Function.prototype.bind` 메서드를 이용하여 `this`를 바인딩할 수 있다.
+      setTimeout(
+        function () {
+          console.log(this); // obj
+          console.log(this.value); // 100
+        }.bind(this)
+      );
+
+      getThat();
+      getThis();
+    },
+  };
+
+  obj.getValue();
+}
+
+// 🔑 constructor임에도 불구하고 `new` 키워드가 없는 일반 함수에서 `this`를 사용하는 것은 지양해야 한다.
+// strict 모드에서 `undefined`를 참조하도록 하는 이유가 있다. (예상치 못한 오류나 혼란을 방지하는 목적)
+// 코드를 트랙킹 하는 입장에서 메서드 내의 중첩 함수나 콜백 함수를 일반 함수로 호출하게 되면 `this`는 해당 객체가 아닌 전역 객체를 참조하기 때문에 많은 혼란을 준다.
+// `this`는 일반 함수에서는 사용하지 말고, 명확하게 필요로 하는 곳(객체, 생성자 함수, 클래스)에서만 사용해야 한다.
