@@ -259,3 +259,21 @@ var value = 1;
   // 🔑 `this`를 메서드 내부에서 사용하면 `this`를 소유하는 객체가 아닌 메서드를 호출한 객체를 참조한다.
   // 즉 메서드 내부에서 `this`는 호출 시점에 따라 참조할 객체가 정해진다.
 }
+
+// 3️⃣ 22-2-3. 생성자 함수 호출
+// 생성자 함수 내부에서의 `this`는 미래에 생성될 인스턴스를 가리킨다.
+function SmartPhone(model) {
+  if (!(this instanceof SmartPhone)) {
+    return new SmartPhone(model);
+  }
+
+  this.model = model;
+}
+
+SmartPhone.prototype.getModel = function () {
+  return this.model ?? "The model does not exist.";
+};
+
+const iPhoneSix = new SmartPhone("iPhone6");
+
+iPhoneSix.getModel(); // iPhone6
