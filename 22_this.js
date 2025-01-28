@@ -277,3 +277,71 @@ SmartPhone.prototype.getModel = function () {
 const iPhoneSix = new SmartPhone("iPhone6");
 
 iPhoneSix.getModel(); // iPhone6
+
+// 4️⃣ 22-2-4. Function.prototype.apply/call/bind 메서드에 의한 간접 호출
+// `apply`, `call`, `bind`는 `Function`의 프로토타입의 메서드이다. 이 메서드들은 모든 함수에서 상속받아 사용할 수 있다.
+
+// 👉 `apply` 메서드
+// 첫 번째 매개변수: `this`로 사용할 객체 (Mandatory)
+// 두 번째 매개변수: 매개변수로 사용할 배열 또는 유사 배열 객체 (Optional)
+// 반환값: 호출된 함수의 반환값
+
+// 👉 `call` 메서드
+// 첫 번째 매개변수: `this`로 사용할 객체 (Mandatory)
+// 두 번째 ~ n 번째 매개변수: 매개변수로 사용할 일반적인 인자들 (, 를 기준으로 나눈다.) (Optional)
+// 반환값: 호출된 함수의 반환값
+
+function getThisBinding() {
+  console.log(arguments); // `arguments`는 유사 배열 객체이다.
+  return this;
+}
+
+const thisArg = { a: "1" };
+
+getThisBinding(); // window, (strict mode 시 `undefined`)
+
+// `apply`와 `call` 메서드들의 본질적인 기능은 함수를 호출하는 것이다.
+// 단지 호출 시 함수 내부의 `this`는 첫 번째 인자로 전달한 특정 객체를 참조할 뿐이다.
+getThisBinding.apply(thisArg); // { a: '1' }
+getThisBinding.call(thisArg); // { a: '1' }
+
+// `apply`와 `call` 메서드들의 두 번째 인자를 전달할 경우, 호출한 함수에 인자가 전달된다.
+// 🔑 `apply`와 `call` 메서드들의 두 번째 인자 전달 차이는 `apply`는 배열 또는 유사 배열 객체로 전달하고 `call`은 ,(comma)로 나눈다는 점이다.
+// 즉, 인자를 전달하는 형식만 다를 뿐 동일하게 동작한다.
+getThisBinding.apply(thisArg, [1, 2, 3]); // { a: '1' }, `getThisBinding`함수는 1, 2, 3을 인자로 전달 받는다.
+getThisBinding.call(thisArg, 1, 2, 3); // { a: '1' }, `getThisBinding`함수는 1, 2, 3을 인자로 전달 받는다.
+
+// 👉 `bind` 메서드
+// 첫 번째 매개변수: `this`로 사용할 객체 (Mandatory)
+// 두 번째 ~ n 번째 매개변수: 매개변수로 사용할 인자들 (, 를 기준으로 나눈다.) (Optional)
+// 반환값: 호출된 함수의 반환값
+// ❗️ `bind` 메서드는 함수를 호출하지 않는다. `this`를 첫 번째 인자의 객체로 참조하고 매개변수들을 함수에 전달하지만 호출하지 않는다.
+// `bind` 메서드를 사용할 때는 호출 시, 꼭 명시적으로 함수를 호출해야 한다.
+
+// 명시적으로 호출하지 않는 경우, 참조한 함수를 반환한다.
+getThisBinding.bind(thisArg); // getThisBinding
+
+// 명시적으로 호출하는 경우, 함수의 반환값을 반환한다.
+getThisBinding.bind(thisArg)(); // { a: '1' }
+
+// `bind` 메서드는 메서드 내부의 중첩 함수 또는 콜백 함수 사용 시 `this`의 불일치를 해결하기 위해 사용할 수 있다.
+{
+  const book = {
+    genre: "Mystery",
+    getGenre(callback) {
+      setTimeout(callback, 0);
+    },
+  };
+
+  book.getGenre(function () {
+    console.log(this.genre); // undefined, `this`는 최상위 객체인 윈도우를 참조하고 있다.
+  });
+
+  book.getGenre(
+    function () {
+      console.log(this.genre); // Mystery
+    }.bind(book) // `bind` 메서드를 통해 `this`가 `book` 객체를 참조
+  );
+}
+
+// 🔑 `apply`, `call`, `bind` 메서드에 의한 간접 호출 시, `this`는 메서드의 첫 번째 인자로 전달된 특정 객체를 참조한다.
