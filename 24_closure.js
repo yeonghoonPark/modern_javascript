@@ -228,7 +228,7 @@ bar(); // 1
 }
 
 /**
- * 24-5. 클로저의 활용
+ * 24-4. 클로저의 활용
  *
  * 클로저는 상태를 안전하게 변경하고 유지하기 위해 사용한다.
  * 쉽게 말하면, 상태가 의도치 않게 변경되지 않도록 상태를 안전하게 은닉하고 특정 함수에게만 상태 변경을 허용한다.
@@ -353,4 +353,135 @@ bar(); // 1
   // `makeCounter` 함수는 자유 변수 `counter`를 참조하는 클로저 함수 `increase`와 `decrease`를 반환한다.
   // 상탯값을 유지하고, 외부에서는 `increase`와 `decrease` 메서드를 통해서만 상탯값을 제어할 수 있다.
   // 즉, 상탯값 변경에 대한 캡슐화와 외부로 부터 은닉되어 안정성을 가진다.
+}
+
+/**
+ * 24-5. 캡슐화와 정보 은닉
+ *
+ * 캡슐화는 객체의 상태를 나타내는 프로퍼티와 프로퍼티를 참조하고 조작할 수 있는 동작인 메서드를 하나로 묶은 것을 말한다.
+ * 쉽게 말하면, 객체의 프로퍼티와 메서드를 하나로 묶은 것을 의미한다.
+ *
+ * 캡슐화는 객체의 특정 프로퍼티나 메서드를 감출 목적으로 사용하기도 하며, 이를 정보 은닉이라 한다.
+ * 정보 은닉은 외부에 공개할 필요가 없는 구현의 일부를 외부에 공개되지 않도록 감춘다.
+ * 이를 통해 의도치 않게 객체의 상태가 변경되는 것을 막고 객체 간의 상호 의존성, 즉 결합도(coupling)을 낮추는 효과가 있다.
+ *
+ * 대부분 객체지향 프로그래밍 언어는 클래스를 정의하고 그 클래스를 구성하는 프로퍼티와 메서드에 대하여
+ * `public`, `private`, `protected` 같은 접근 제한자를 선언하여 공개 범위를 한정할 수 있다.
+ * `public`로 선언된 프로퍼티와 메서드는 클래스 외부에서 참조할 수 있지만,
+ * `private`로 선언된 경우는 클래스 외부에서 참조할 수 없다.
+ *
+ * 자바스크립트는 `public`, `private`, `protected`와 같은 접근 제한자를 제공하지 않았다.
+ * 자바스크립트의 클래스의 프로퍼티와 메서드는 기본적으로 외부에서 참조가 가능한 `public` 이며,
+ * 자바스크립트의 클래스에서 ES13(2022)부터 `#` 기호를 이용한 `private`을 지원한다.
+ * `protected` 접근 제한자는 따로 제공되지 않지만 클로저를 이용해 비슷한 보호 기능을 구현할 순 있다.
+ *
+ */
+
+// 예문
+{
+  function Person(age, name) {
+    let _age = age; // private
+    this.name = name; // public
+
+    // 인스턴스가 생성될 때 마다 `sayHi`를 생성 함
+    this.sayHi = function () {
+      console.log(`Hi, I'm ${name}. I'm ${age} old.`);
+    };
+  }
+
+  const john = new Person(30, "John");
+  john.sayHi(); // Hi, I'm John. I'm 30 old.
+
+  console.log(john.name); // John
+  console.log(john._age); // undefined
+
+  // `name` 프로퍼티는 현재 외부로 공개되어 있어 자유롭게 참조하거나 변경할 수 있다.
+  // `_age` 변수는 `Person` 생성자 함수의 지역 변수이므로, 함수 내부에서는 참조할 수 있지만 외부에서는 참조할 수 없다.
+}
+
+// 예문 2
+{
+  function Person(age, name) {
+    let _age = age; // private
+    this.name = name; // public
+  }
+
+  Person.prototype.sayHi = function () {
+    console.log(`Hi, I'm ${this.name}. I'm ${this._age} old.`);
+  };
+
+  const john = new Person(30, "John");
+  john.sayHi(); // Hi, I'm John. I'm undefined old.
+
+  // prototype의 `sayHi` 메서드는 `_age`를 참조할 수 없다.
+}
+
+// 예문 3
+{
+  // 자바스크립트 클래스의 `public`, `private`, `protected` 구현
+
+  // 👉 `public` 구현 (클래스 내부, 외부에서 모두 참조가 가능)
+  class PublicPerson {
+    // `public` 프로퍼티
+    constructor(name) {
+      this.name = name;
+    }
+
+    getPublicPersonName() {
+      return this.name;
+    }
+  }
+
+  const publicPerson = new PublicPerson("John");
+  console.log(publicPerson); // PublicPerson { name: 'John' }
+  console.log(publicPerson.name); // John
+  console.log(publicPerson.getPublicPersonName()); // John
+
+  // 👉 `private` 구현 (클래스 내부에서만 참조가 가능하며, 외부에서 접근 불가)
+  class PrivatePerson {
+    // `private` 필드 선언
+    #name;
+
+    // `private` 프로퍼티
+    constructor(name) {
+      this.#name = name;
+    }
+
+    getPrivateName() {
+      return this.#name;
+    }
+  }
+
+  const privatePerson = new PrivatePerson("James");
+  console.log(privatePerson); // PrivatePerson { #name: 'James' }
+  // console.log(privatePerson.#name); // Uncaught SyntaxError: Private field '#name' must be declared in an enclosing class
+  console.log(privatePerson.getPrivateName()); // James
+
+  // 👉 `protected` 구현
+  class ProtectedPerson {
+    #name;
+
+    constructor(name) {
+      this.#name = name;
+    }
+
+    getProtectedName() {
+      return this.#name;
+    }
+  }
+
+  class SubProtectedPerson extends ProtectedPerson {
+    constructor(name) {
+      // 직접적으로 `private` 필드에 접근 불가
+      super(name);
+    }
+
+    // `protected`처럼 사용하는 메서드
+    accessProtectedName() {
+      return this.getProtectedName(); // 상위 클래스 메서드를 통해 접근
+    }
+  }
+
+  const protectedPerson = new SubProtectedPerson("Olivia");
+  console.log(protectedPerson.getProtectedName()); // Olivia
 }
