@@ -110,3 +110,165 @@
   // `new` 키워드가 없다면 에러가 발생한다.
   // const james = Person(); // Uncaught TypeError: Class constructor Person cannot be invoked without 'new' at ~
 }
+
+/**
+ * 25-5. 메서드
+ *
+ * 클래스 몸체에는 0개 이상의 메서드만 선언할 수 있다.
+ * 클래스 몸체에서 생성할 수 있는 메서드는 다음과 같다.
+ *
+ * 1. constructor
+ * 2. prototype method
+ * 3. static method
+ *
+ */
+
+// 25-5-1. constructor
+// `constructor`는 인스턴스를 생성하고 초기화하기 위한 특수한 메서드이다.
+// `constructor`의 특징은 다음과 같다.
+// 1. 이름을 변경할 수 없다.
+// 2. 클래스 내부에서 2개 이상 호출할 수 없다.
+// 3. 생략할 수 있다.
+{
+  class Person {
+    // `constructor`
+    constructor(name) {
+      // 인스턴스 생성 및 초기화
+      this.name = name;
+    }
+  }
+
+  // 클래스는 함수이다.
+  console.log(typeof Person); // function
+  console.dir(Person);
+
+  // `constructor` 메서드에 의해 인자로 전달된 'John'은 생성된 인스턴스의 'name' 프로퍼티 값이 된다.
+  const john = new Person("John");
+  console.log(john); // Person {name: 'John'}
+}
+
+// 25-5-2. prototype method
+
+// 생성자 함수의 경우, `prototype` 메서드를 생성하기 위해서는 명시적으로 메서드를 추가해야 한다.
+{
+  function Person(name) {
+    this.name = name;
+  }
+
+  Person.prototype.sayHello = function () {
+    console.log(`Hi, I'm ${this.name}`);
+  };
+
+  const olivia = new Person("Olivia");
+
+  olivia.sayHello(); // Hi, I'm Olivia
+
+  Object.getPrototypeOf(olivia) === Person.prototype; // true
+  olivia instanceof Person; // true
+  olivia.constructor === Person; // true
+}
+
+// 클래스의 경우, 클래스 몸체에서 메서드를 정의하면 기본적으로 `prototype`의 메서드가 된다.
+{
+  class Person {
+    constructor(name) {
+      this.name = name;
+    }
+
+    sayHello() {
+      console.log(`Hi, I'm ${this.name}`);
+    }
+  }
+
+  const mike = new Person("Mike");
+
+  mike.sayHello(); // Hi, I'm Mike
+
+  Object.getPrototypeOf(mike) === Person.prototype; // true
+  mike instanceof Person; // true
+  mike.constructor === Person; // true
+}
+
+// 25-5-3. static method
+// static method(정적 메서드)는 인스턴스를 생성하지 않아도 호출할 수 있는 메서드를 말한다.
+
+// 생성자 함수의 경우, static method를 생성하기 위해서는 명시적으로 생성자 함수에 메서드를 추가해야 한다.
+{
+  function Person(name) {
+    this.name = name;
+  }
+
+  Person.sayHello = function () {
+    console.log("Hello");
+  };
+
+  Person.sayHello(); // Hello
+}
+
+// 클래스의 경우, 클래스 몸체에서 `static` 키워드를 이용하여 메서드를 정의하면 static method가 된다.
+{
+  class Person {
+    constructor(name) {
+      this.name = name;
+    }
+
+    static sayHi() {
+      console.log("Hi");
+    }
+  }
+
+  Person.sayHi(); // Hi
+}
+
+// 25-5-4. 정적 메서드와 프로토타입 메서드의 차이
+// 1. 정적 메서드와 프로토타입 메서드는 자신이 속해 있는 프로토타입 체인이 다르다.
+// 2. 정적 메서드는 클래스로 호출하고 프로토타입 메서드는 인스턴스로 호출한다.
+// 3. 정적 메서드는 인스턴스 프로퍼티를 참조할 수 없지만 프로토타입 메서드는 인스턴스 프로퍼티를 참조할 수 있다.
+
+{
+  // static methods cannot reference instance properties
+  class Square {
+    // static method
+    static printArea(width, height) {
+      // "this" refers to the class constructor(itself)
+      console.log(this === Square); // true
+      console.log(width * height);
+    }
+  }
+
+  // cannot reference instance properties
+  Square.printArea(2, 5); // 10
+}
+
+{
+  // prototype methods can reference instance properties
+  class Square {
+    // constructor
+    constructor(width, height) {
+      this.width = width;
+      this.height = height;
+    }
+
+    // prototype method
+    printArea() {
+      // "this" refers to the instance of the class
+      console.log(this === Square); // false
+      console.log(this.width * this.height);
+    }
+  }
+
+  // declaration instance
+  const square = new Square(10, 10);
+
+  // call "printArea"
+  square.printArea(); // 100
+}
+
+// 🔑 So, if you don't need to reference instance properties, you should use static methods; otherwise, use prototype methods
+
+// 25-5-5. 클래스에서 정의한 메서드의 특징
+// 1. `function` 키워드를 생략한 메서드 축약 표현을 사용한다.
+// 2. 객체 리터럴과는 다르게 클래스에 메서드를 정의할 때는 콤마(,)가 필요 없다.
+// 3. 암묵적으로 `use strict`가 실행된다.
+// 4. `for...in` 또는 `Object.keys` 메서드 등으로 열거할 수 없다. 즉, [[Enumerable]] 슬롯의 값이 `false`다.
+// 5. 내부 슬롯 [[Constructor]]를 갖지 않는 non-constructor이다. 따라서 new 연산자와 함께 호출할 수 없다.
