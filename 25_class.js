@@ -272,3 +272,39 @@
 // 3. 암묵적으로 `use strict`가 실행된다.
 // 4. `for...in` 또는 `Object.keys` 메서드 등으로 열거할 수 없다. 즉, [[Enumerable]] 슬롯의 값이 `false`다.
 // 5. 내부 슬롯 [[Constructor]]를 갖지 않는 non-constructor이다. 따라서 new 연산자와 함께 호출할 수 없다.
+
+/**
+ * 25-6. 클래스의 인스턴스 생성 과정
+ *
+ * `new` 키워드와 함께 클래스를 호출하면 생성자 함수와 마찬가지로 클래스 내부 메서드 [[Construct]]가 호출된다.
+ *  클래스는 `new` 키워드 없이 호출할 수 없으며, 다음과 같은 과정을 거쳐 인스턴스가 생성된다.
+ *
+ * 1. 인스턴스 생성과 `this` 바인딩
+ * - `new` 키워드와 함께 클래스를 호출하면 `constructor`의 내부 코드가 실행되기에 앞서 암묵적으로 빈 객체가 생성된다.
+ * - 빈 객체의 프로토타입은 클래스 내부에서 정의된 프로토타입 메서드들의 집합체이다.
+ * - 빈 객체의 프로퍼티들은 `constructor`의 내부 코드에서 정의된 `this`에 바인딩된다.
+ *
+ * 2. 인스턴스 초기화
+ * - `constructor`의 내부 코드가 실행되면서 `this`에 바인딩되어 있는 인스턴스를 초기화한다.
+ *
+ * 3. 인스턴스 반환
+ * - 클래스의 모든 처리(`prototype` 바인딩, `this` 바인딩 및 초기화)가 끝나면 완성된 인스턴스가 반환된다.
+ *
+ */
+
+{
+  class Person {
+    constructor(name) {
+      // 1. 암묵적으로 인스턴스가 생성되고 `this`에 바인딩된다.
+      console.log(this); // Person {}
+      console.log(Object.getPrototypeOf(this) === Person.prototype); // true
+
+      // 2. `this`에 바인딩되어 있는 인스턴스를 초기화한다.
+      this.name = name;
+    }
+
+    // 3. 완성된 인스턴스가 반환된다.
+  }
+
+  const david = new Person("David");
+}
