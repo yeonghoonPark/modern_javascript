@@ -308,3 +308,172 @@
 
   const david = new Person("David");
 }
+
+/**
+ * 25-7 프로퍼티
+ *
+ */
+
+// 25-7-1. 인스턴스 프로퍼티
+// 인스턴스의 프로퍼티는 `constructor` 내부에서 정의해야 하며, 내부에서 정의된 프로퍼티는 public 하다.
+{
+  class Person {
+    constructor(name) {
+      this.name = name;
+    }
+  }
+
+  const james = new Person("James");
+  console.log(james); // Person {name: 'James'}
+}
+
+// 25-7-2. 접근자 프로퍼티
+// 접근자 프로퍼티(accessor property)는 자체적으로 값([[Value]] 내부슬롯)을 가지고 있지 않고, 값을 읽거나 저장할 때 사용하는 접근자 함수(accessor function)로 구성된 프로퍼티다.
+{
+  const person = {
+    // 데이터 프로퍼티 (data property)
+    firstName: "Julian",
+    lastName: "Bream",
+
+    // 접근자 프로퍼티 (accessor property)
+    // getter 함수
+    get fullName() {
+      return this.firstName + " " + this.lastName;
+    },
+
+    // setter 함수
+    set fullName(name) {
+      [this.firstName, this.lastName] = name.split(" ");
+    },
+  };
+
+  // 데이터 프로퍼티를 통한 프로퍼티 값 참조
+  console.log(person.fullName); // Julian Bream
+
+  // 접근자 프로퍼티를 통한 프로퍼티 값 지정
+  person.fullName = "John Williams";
+  console.log(person.fullName); // John Williams
+
+  // 접근자 프로퍼티는 `configurable`, `enumerable`, `get`, `set` 프로퍼티 어트리뷰트를 갖는다.
+  console.log(Object.getOwnPropertyDescriptor(person, "fullName"));
+}
+
+// 접근자 프로퍼티는 클래스에서도 사용할 수 있으며, 위의 예제를 클래스로 표현하면 다음과 같다.
+{
+  class Person {
+    // 데이터 프로퍼티
+    constructor(firstName, lastName) {
+      this.firstName = firstName;
+      this.lastName = lastName;
+    }
+
+    // 접근자 프로퍼티
+    // getter
+    get fullName() {
+      return this.firstName + " " + this.lastName;
+    }
+
+    // setter
+    set fullName(name) {
+      [this.firstName, this.lastName] = name.split(" ");
+    }
+  }
+
+  const person = new Person("Andy", "James");
+
+  // 데이터 프로퍼티를 통한 프로퍼티 값 참조
+  console.log(person.fullName); // Andy James
+
+  // 접근자 프로퍼티를 통한 프로퍼티 값 지정
+  person.fullName = "Steve Vai";
+  console.log(person.fullName); // Steve Vai
+
+  // 접근자 프로퍼티는 `configurable`, `enumerable`, `get`, `set` 프로퍼티 어트리뷰트를 갖는다.
+  console.log(Object.getOwnPropertyDescriptor(Person.prototype, "fullName"));
+
+  // 클래스 내부의 `getter`, `setter` 함수는 프로퍼티의 인스턴스처럼 사용된다.
+  // 즉, `getter`와 `setter`는 호출하는 것이 아니라 참조시에 내부적으로 호출되거나 값을 할당하는 형식이다.
+  // 🔑 `getter`는 이름 그대로 무언가를 취득할 때 사용하므로 반드시 무언가를 `return` 해야한다.
+  // 🔑 `setter`는 무언가를 프로퍼티에 할당해야 할 때 사용하므로 반드시 매개변수가 필요하다. 다만 단 하나의 값만 할당받기 때문에 단 하나의 매개변수만 선언할 수 있다.
+}
+
+// 25-7-3. 클래스 필드 정의 제안
+// 클래스 필드(멤버)란, 클래스 기반 객체지향 언어에서 클래스가 생성할 인스턴스의 프로퍼티를 가리키는 용어다.
+// 자바스크립트에서 클래스 필드를 생성하기 위해서는 `constructor` 내부에서 초기화를 거쳐야한다.
+{
+  class Person {
+    constructor(name) {
+      // 인스턴스 생성 및 초기화
+      this.name = name;
+    }
+  }
+
+  const john = new Person("John"); // Person {name: 'John'}
+}
+
+// 25-7-4. private 필드 정의 제안
+// 자바스크립트에서 클래스는 다른 객체 지향 언어에서 지원하는 `private`, `public`, `protected`를 지원하지 않는다.
+// 따라서 인스턴스의 프로퍼티는 외부에서 언제나 참조할 수 있는 `public` 프로퍼티이다.
+// 하지만 Chrome 74이상의 브라우저에서 Node.js 12버전 이상을 사용하면 `private` 필드를 정의할 수 있다.
+// `private` 필드를 정의하기 위해서는 필드의 선두에 `#`을 붙여주고, 참조할 때도 `#`을 붙여주어야 한다.
+// 🚨 `private` 필드는 클래스 내부에서만 참조 가능하다. 즉, 외부에서 접근할 수 없다.
+{
+  class Person {
+    // `private` 필드 정의
+    #name = "";
+
+    constructor(name) {
+      // `private` 필드 참조
+      this.#name = name;
+    }
+  }
+
+  const john = new Person("John");
+
+  // `private` 필드인 `#name`은 외부에서 참조할 수 없다.
+  // console.log(john.#name); // Uncaught SyntaxError: Private field '#name' must be ~
+}
+
+// 이처럼 클래스 외부에서 `private` 필드에 직접 전근할 수 있는 방법은 없다.
+// 다만 접근자 프로퍼티를 통해 간접적으로 접근하는 방법은 유효하다.
+{
+  class Person {
+    // `private` 필드 정의
+    #name = "";
+
+    constructor(name) {
+      // `private` 필드 참조
+      this.#name = name;
+    }
+
+    // getter 접근자 프로퍼티
+    get name() {
+      return this.#name;
+    }
+  }
+
+  const john = new Person("John");
+  console.log(john.name); // John
+}
+
+// 25-7-5. static 필드 정의 제안
+// 자바스크립트의 클래스에는 `static` 키워드를 사용하여 정적 메서드를 정의할 수 있다.
+// 마찬가지로 `static` 키워드를 이용하여 프로퍼티 필드를 정의할 수 있다.
+{
+  class CustomMath {
+    // `static public` 필드 정의
+    static PI = 22 / 7;
+
+    // `static private` 필드 정의
+    static #num = 10;
+
+    // `static` 메서드
+    static increment() {
+      return ++CustomMath.#num;
+    }
+  }
+
+  console.log(CustomMath.PI); // 3.142857142857143
+  console.log(CustomMath.increment()); // 11
+  console.log(CustomMath.increment()); // 12
+}
