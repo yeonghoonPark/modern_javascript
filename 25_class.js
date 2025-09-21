@@ -310,7 +310,7 @@
 }
 
 /**
- * 25-7 프로퍼티
+ * 25-7. 프로퍼티
  *
  */
 
@@ -476,4 +476,266 @@
   console.log(CustomMath.PI); // 3.142857142857143
   console.log(CustomMath.increment()); // 11
   console.log(CustomMath.increment()); // 12
+}
+
+/**
+ * 25-8. 상속에 의한 클래스 확장
+ *
+ */
+
+// 25-8-1. 클래스 상속과 생성자 함수 상속
+// 상속에 의한 클래스 확장은 프로토타입 기반의 상속과는 다른 개념이다.
+// 프로토타입 기반의 상속은 프로토타입 체인을 통해 다른 객체의 자산을 상속받는 개념이지만,
+// 상속에 의한 클래스 확장은 `기존 클래스를 상속받아 새로운 클래스를 확장(extends)하여 정의`하는 것이다.
+// 클래스와 생성자 함수는  인스턴스를 생성하는 함수라는 점에서 유사하지만,
+// 클래스는 상속을 통해 기존 클래스를 확장할 수 있는 문법이 제공되지만 생성자 함수는 그렇지 않다.
+{
+  class Animal {
+    constructor(age, weight) {
+      this.age = age;
+      this.weight = weight;
+    }
+
+    eat() {
+      return "Eat";
+    }
+
+    move() {
+      return "Move";
+    }
+  }
+
+  // 상속을 통해 `Animal` 클래스를 확장한 `Bird` 클래스
+  class Bird extends Animal {
+    fly() {
+      return "Fly";
+    }
+  }
+
+  const sparrow = new Bird(1, 200);
+
+  console.log(sparrow); // Bird {age: 1, weight: 200}
+  console.log(sparrow instanceof Bird); // true
+  console.log(sparrow instanceof Animal); // true
+  console.log(sparrow.eat()); // Eat
+  console.log(sparrow.fly()); // Fly
+  console.log(sparrow.move()); // Move
+}
+
+// 25-8-2. extends 키워드
+// 상속을 통해 클래스를 확장하려면 `extends` 키워드를 사용하여 상속받을 클래스를 정의한다.
+// 상속을 통해 확장된 클래스는 sub-class라 부르고, 그에 상속된 클래스를 super-class라 부른다.
+// super-class와 sub-class는 인스턴스의 프로토타입 체인 뿐만 아니라 클래스의 프로토타입 체인도 생성한다.
+// 따라서 프로토타입 메서드, 정적 메서드 모두 상속이 가능하다.
+{
+  // Super class (전신/부모)
+  class Base {}
+
+  // Sub class (파생/자식)
+  class Derived extends Base {}
+}
+
+// 25-8-3. 동적 상속
+// `extends` 키워드는 클래스뿐만 아니라 생성자 함수를 상속받아 클래스를 확장할 수 있다.
+// 단, `extends` 키워드 앞에는 항상 클래스가 위치해야 한다.
+{
+  // constructor function
+  function Base(name) {
+    this.name = name;
+  }
+
+  // sub class
+  class Derived extends Base {}
+
+  const derived = new Derived("Derived Instance");
+
+  console.log(derived); // Derived {name: 'Derived Instance'}
+}
+
+// `extends` 키워드의 우측 피연산자는 클래스뿐만 아니라
+// [[Construct]] 내부 메서드를 갖는 함수 객체로 평가될 수 있는 모든 표현식을 사용할 수 있다.
+{
+  // constructor function
+  function BaseConstructor() {}
+
+  // class
+  class BaseClass {}
+
+  // condition
+  const condition = true;
+
+  // dynamic sub class
+  class DynamicDerived extends (condition ? BaseConstructor : BaseClass) {}
+
+  const dynamicDerived = new DynamicDerived();
+
+  console.log(dynamicDerived); // Derived {}
+  console.log(dynamicDerived instanceof BaseConstructor); // true
+  console.log(dynamicDerived instanceof BaseClass); // false
+}
+
+// 25-8-4. 서브클래스의 constructor
+// 클래스 내부에서 `constructor`를 생략하면 암묵적으로 비어있는 `constructor`가 정의된다.
+// 👉 constructor () {}
+
+// 확장된 sub class 내부에서 `constructor`를 생략하면 암묵적으로 다음과 같은 `constructor`가 정의된다.
+// 👉 constructor (...args) { super(...args); }
+// `super` 함수는 super class의 `constructor`를 호출하여 인스턴스를 생성한다.
+
+{
+  // super class
+  class SuperClass {}
+
+  // sub class
+  class SubClass extends SuperClass {}
+
+  // 위의 `SuperClass`와 `SubClass`의 내부 `constructor`는 실제로 다음과 같이 구성된다.
+  // super class
+  class SuperClass2 {
+    constructor() {}
+  }
+
+  // sub class
+  class SubClass2 extends SuperClass2 {
+    constructor(...args) {
+      super(...args);
+    }
+  }
+
+  const derived = new SubClass2();
+  console.log(derived); // SubClass2 {}
+
+  // super class와 sub class 모두 `constructor`를 생략하면 빈 객체가 생성된다.
+  // 미래에 생성될 인스턴스의 프로퍼티를 추가하려면 `constructor` 내부에 프로퍼티를 추가해야 한다.
+}
+
+// 25-8-5. super 키워드
+// `super` 키워드는 함수처럼 호출할 수도 있고 `this`와 같이 식별자처럼 참조할 수 있는 특수한 키워드다.
+// `super`는 다음과 같이 동작한다.
+
+// 👉 `super`를 호출하면 super class의 `constructor`를 호출한다.
+// 👉 `super`를 참조하면 super class의 메서드를 호출할 수 있다.
+
+// 🎯 `super` 호출 (sub class에 인스턴스의 property가 없는 경우)
+{
+  // super class
+  class Base {
+    constructor(a, b) {
+      this.a = a;
+      this.b = b;
+    }
+  }
+
+  // sub class
+  class Derived extends Base {
+    // 암묵적으로 `constructor`가 정의된다.
+    // constructor (...args) { super(...args); }
+  }
+
+  const derived = new Derived(1, 2);
+  console.log(derived); // Derived {a: 1, b: 2}
+}
+
+// 🎯 `super` 호출 (sub class에 인스턴스의 property가 있는 경우)
+{
+  // super class
+  class Base {
+    constructor(a, b) {
+      this.a = a;
+      this.b = b;
+    }
+  }
+
+  // sub class
+  class Derived extends Base {
+    constructor(a, b, c) {
+      super(a, b);
+      this.c = c;
+    }
+  }
+
+  const derived = new Derived(1, 2, 3);
+  console.log(derived); // Derived {a: 1, b: 2, c: 3}
+}
+
+// 🎯 `super` 참조
+// 메드드 내부에세 `super`를 참조하면 수퍼클래스의 메서드를 호출할 수 있다.
+{
+  // super class
+  class Base {
+    constructor(name) {
+      this.name = name;
+    }
+
+    sayHi() {
+      return `Hi, ${this.name}`;
+    }
+  }
+
+  // sub class
+  class Derived extends Base {
+    constructor(name) {
+      super(name);
+    }
+  }
+
+  const john = new Derived("John");
+  john.sayHi(); // Hi, John
+}
+
+// 25-8-6. 상속 클래스의 인스턴스 생성 과정
+// 상속 관계에 있는 두 클래스가 협력하여 인스턴스를 생성하는 방법
+{
+  // super class
+  class Rectangle {
+    constructor(width, height) {
+      this.width = width;
+      this.height = height;
+    }
+
+    getArea() {
+      return this.width * this.height;
+    }
+
+    toString() {
+      return `width = ${this.width}, height = ${this.height}`;
+    }
+  }
+
+  // sub class
+  class ColorRectangle extends Rectangle {
+    constructor(width, height, color) {
+      super(width, height);
+      this.color = color;
+    }
+
+    // method overriding
+    toString() {
+      return super.toString() + `, color = ${this.color}`;
+    }
+  }
+
+  const colorRectangle = new ColorRectangle(2, 4, "red");
+  console.log(colorRectangle); // {width: 2, height: 4, color: 'red'}
+
+  // 상속을 통한 `getArea` 메서드 호출
+  console.log(colorRectangle.getArea()); // 8
+
+  // 오버라이딩된 `toString` 메서드 호출
+  console.log(colorRectangle.toString()); // width = 2, height = 4, color = red
+}
+
+// 25-8-7. 표준 빌트인 생성자 함수 확장
+// `extends` 키워드를 활용하면 클래스뿐만이 아니라 [[Constructor]] 내부 메서드를 갖는 함수 객체로 평가되는 모든 표현식을 사용할 수 있다.
+// 쉽게 말하면, `String`, `Number`, `Array` 같은 표준 빌트인 객체도 `extends` 키워드를 활용하여 확장할 수 있다는 의미다.
+{
+  class MyArray extends Array {
+    // 중복된 배열 요소를 제거하고 반환
+    uniq() {
+      return this.filter((val, idx, arr) => arr.indexOf(val) === idx);
+    }
+  }
+
+  const myArray = new MyArray(1, 1, 2, 3);
+  console.log(myArray.uniq()); // [1, 2, 3]
 }
