@@ -341,7 +341,6 @@ obj.foo(); // 1
  * `arguments` 객체는 함수를 정의할 때, 매개변수의 갯수를 확정할 수 없는 가변 인자 함수를 구현할 때 유용하다.
  * 단, 화살표 함수에서는 `arguments` 바인딩을 갖지 않아 상위 스코프의 `arguments`를 참조하기 때문에 도움이 되지 않는다.
  * 따라서, 화살표 함수의 가변 인자 함수를 구현할 때는 반드시 `rest` 파라미터를 사용해야 한다.
- *
  */
 {
   function fnDeclaration() {
@@ -353,4 +352,58 @@ obj.foo(); // 1
     console.log(arguments); // ❌ Uncaught ReferenceError: arguments is not defined
   };
   // arrowFn(1, 2, 3);
+}
+
+/**
+ * 26-4. Rest 파라미터
+ *
+ */
+
+/**
+ * 26-4-1. 기본 문법
+ *
+ * Rest 파라미터는 매개변수 이름 앞에 세개의 점 (...)을 붙여서 정의한 매개변수를 의미한다.
+ */
+{
+  // Rest 파라미터는 함수에 전달된 인수들의 목록을 배열로 전달 받는다.
+  const foo = (...rest) => {
+    console.log(rest); // [1, 2, 3]
+  };
+  foo(1, 2, 3);
+
+  // 일반 매개변수와 Rest 파라미터를 함께 사용할 수 있으며, 함수에 전달된 인수들은 배열에 순차적으로 할당된다.
+  // 따라서, Rest 파라미터는 항상 마지막 파라미터야 한다.
+  const fuz = (param, ...rest) => {
+    console.log(param); // 1
+    console.log(rest); // [2, 3]
+  };
+  fuz(1, 2, 3);
+}
+
+/**
+ * 26-4-2. Rest 파라미터와 arguments 객체
+ *
+ * ES5에서는 Rest 파라미터가 없었기 때문에 가변 인자 함수를 활용할 때 `arguments` 객체를 사용하여 인수를 전달받았다.
+ * `arguments` 객체는 순회 가능한 유사 배열 객체이며, 함수 내부에서 지역 변수처럼 활용할 수 있다.
+ * 하지만, `arguments` 객체는 배열이 아닌 유사 배열 객체이므로 `Array.prototype` 메서드를 활용할 수 없다.
+ * 배열 메서드를 활용하기 위해서는 `Function.prototype.call`, `Function.prototype.bind` 메서드를 사용해 `arguments` 객체를 배열로 변환해야 하는 번거로움을 가진다.
+ * 반면, ES6의 Rest 파라미터는 배열로 인수 목록을 직접 전달 받기 때문에 배열로 변환하는 번거로움을 피할 수 있다.
+ */
+{
+  function fnSum() {
+    // 유사 배열 객체인 `arguments`를 배열로 변환
+    var array = Array.prototype.slice.call(arguments);
+
+    return array.reduce(function (acc, val) {
+      return acc + val;
+    }, 0);
+  }
+  fnSum(1, 2, 3); // 6
+
+  const arrowSum = (...args) => {
+    // 화살표 함수는 `arguments` 바인딩을 하지 않는다.
+    // 따라서, 화살표 함수로 가변 인자 함수를 구현할 때는 반드시 Rest 파라미터를 사용해야 한다.
+    return args.reduce((acc, val) => acc + val, 0);
+  };
+  arrowSum(1, 2, 3); // 6
 }
