@@ -356,7 +356,6 @@ obj.foo(); // 1
 
 /**
  * 26-4. Rest 파라미터
- *
  */
 
 /**
@@ -406,4 +405,45 @@ obj.foo(); // 1
     return args.reduce((acc, val) => acc + val, 0);
   };
   arrowSum(1, 2, 3); // 6
+}
+
+/**
+ * 26-6. 매개변수 기본값 (Default Parameter)
+ *
+ * 함수를 호출할 때, 매개변수의 개수만큼 인수를 전달하는 것이 바람직하지만, 그렇지 않더라도 에러가 발생하지 않는다.
+ * 이는 자바스크립트 엔진이 매개변수의 개수와 인수의 개수를 체크하지 않기 때문이다.
+ * 만약 인수를 전달하지 않을 경우, 해당 매개변수의 값을 `undefined`가 된다.
+ *
+ * 함수 내부 로직의 경우에 따라 의도치 않는 결과가 나올 수 있어, ES5까지는 방어 코드를 구성해야 했다.
+ * ES6에 추가된 Default Parameter 기능은 번거로운 방어 코드 없이 매개변수의 기본값을 설정함으로 편의성을 제공한다.
+ * ES6의 Default Parameter는 인수가 `undefined` 일 때만 유효하다.
+ */
+{
+  // 경우에 따라 의도치 않는 결과가 나올 수 있다.
+  function sum(x, y) {
+    return x + y;
+  }
+  sum(1); // NaN
+
+  // ES5: 방어 로직 작성
+  function sum2(x, y) {
+    x = x || 0;
+    y = y || 0;
+    return x + y;
+  }
+  sum2(1); // 1
+
+  // ES6: Default Parameter 활용
+  function sum3(x = 0, y = 0) {
+    return x + y;
+  }
+  sum3(1); // 1
+
+  // Default Parameter는 `falsy`한 값이 아닌 `undefined`의 경우에만 유효하다.
+  function print(text = "default") {
+    console.log(text);
+  }
+  print(); // default
+  print(undefined); // default
+  print(null); // null
 }
