@@ -124,3 +124,66 @@ const BASE_URL = "https://jsonplaceholder.typicode.com";
     console.warn("Caught Error", error);
   }
 }
+
+/**
+ * 45-2. 프로미스의 생성
+ *
+ * `Promise` 생성자 함수를 `new` 연산자와 함께 호출하면 `Promise`객체를 생성한다.
+ * ES6에 도입된 `Promise`는 호스트 객체가 아닌 ECMAScript 사양에 정의된 표준 빌트인 객체다.
+ * `Promise` 생성자 함수는 비동기 처리를 수행할 콜백 함수(executor)를 인수로 전달 받는데, 이 콜백 함수는 `resolve`와 `reject`함수를 인수로 전달받는다.
+ *
+ * `Promise`는 비동기 처리의 진행도에 따라 상태 정보를 갖는다.
+ * // ------------------------------------------------------------------------------ //
+ * // -----------------------------   Promise Status   ----------------------------- //
+ * // ------------------------------------------------------------------------------ //
+ * //   상태 정보   |                의미                |      상태 변경 조건             //
+ * //   pending   |   비동기 처리가 아직 수행되지 않은 상태   |  프로미스가 생성된 직후 기본 상태   //
+ * //   fulfilled |   비동기 처리가 수행된 상태 / 성공      |   resolve 함수 호출            //
+ * //   rejected  |   비동기 처리가 수행된 상태 / 실패      |   reject 함수 호출             //
+ * // ------------------------------------------------------------------------------ //
+ *
+ * 즉, `Promise`는 비동기 처리 상태와 처리 결과를 관리하는 객체다.
+ */
+{
+  const promise = new Promise((resolve, reject) => {
+    // Promise 함수의 콜백 함수 내부에서 비동기 처리를 수행한다.
+
+    // 비동기 처리 성공
+    if (true) {
+      resolve("result");
+    }
+    // 비동기 처리 실패
+    else {
+      reject("failure reason");
+    }
+  });
+
+  // 콜백 구조의 `get` 함수를 `Promise`구조로 변경
+  const promiseGet = (url) => {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+
+      xhr.open("GET", url);
+      xhr.send();
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+          const response = JSON.parse(xhr.response);
+
+          // 성공적으로 응답을 전달 받으면 `resolve`함수를 호출한다.
+          resolve(response);
+        } else {
+          // 실패 시 에러 처리를 위해 `reject`함수를 호출한다.
+          reject(new Error(xhr.status));
+        }
+      };
+    });
+  };
+
+  promiseGet(`${BASE_URL}/posts`) //
+    .then((response) => {
+      console.log("response: ", response);
+    })
+    .catch((error) => {
+      console.error("error", error);
+    });
+}
