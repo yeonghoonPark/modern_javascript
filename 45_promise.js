@@ -181,9 +181,138 @@ const BASE_URL = "https://jsonplaceholder.typicode.com";
 
   promiseGet(`${BASE_URL}/posts`) //
     .then((response) => {
-      console.log("response: ", response);
+      console.log("[promiseGet] response: ", response);
     })
     .catch((error) => {
       console.error("error", error);
     });
+
+  // 콜백 구조의 `get` 함수를 `Promise`구조인 `fetch`로 변경
+  const promiseGetWithFetch = (url) => {
+    return fetch(url) //
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(response.status);
+        }
+
+        return response.json();
+      })
+      .then((data) => data);
+  };
+
+  promiseGetWithFetch(`${BASE_URL}/posts`)
+    .then((response) => {
+      console.log("[promiseGetWithFetch] response: ", response);
+    })
+    .catch((error) => {
+      console.error("error", error);
+    });
+}
+
+/**
+ * 45-3. 프로미스의 후속 처리 메서드
+ *
+ * `Promise`의 비동기 처리 상태가 변화하면 이에 따른 후속 처리를 해야 한다.
+ * 예를 들어, `fulfilled` 상태가 되면 처리 결과를 가지고 무언가를 해야하고, `rejected` 상태가 되면 처리 결과(에러)를 가지고 에러 처리를 해야한다.
+ * 이를 위해 `Promise`는 후속 메서드인 `then`, `catch`, `finally`를 제공한다.
+ * `Promise`의 비동기 처리 상태가 변화하면 후속 처리 메서드의 인수로 전달한 콜백 함수가 선택적으로 호출된다.
+ */
+
+/**
+ * 45-3-1. Promise.prototype.then
+ *
+ * `then` 메서드는 두 개의 콜백 함수(성공 콜백 함수와 실패 콜백 함수)를 인수로 전달받는다.
+ *  - 첫 번째 콜백 함수는 `fulfilled` 상태(`resolve` 함수가 호출된 상태)가 되면 호출된다. 이때 콜백 함수는 프로미스의 비동기 처리 결과를 인수로 전달 받는다.
+ *  - 두 번째 콜백 함수는 `rejected` 상태(`reject` 함수가 호출된 상태)가 되면 호출된다. 이때 콜백 함수는 프로미스의 비동기 에러 처리 결과를 인수로 전달 받는다.
+ *
+ * `then` 메서드는 언제나 `Promise`를 반환한다. 만약 then 메서드의 콜백 함수가 프로미스를 반환하면 해당 `Promise`를 반환하고,
+ * 만약 콜백 함수가 `Promise`가 아닌 값을 반환하면 그 값을 암묵적으로 `resolve` 또는 `reject` 하여 `Promise`를 생성하여 반환한다.
+ * - (이는 `useCallback`의 첫 번째 인자인 콜백 함수가 `async` 키워드를 사용할 수 없는 이유가 된다.)
+ */
+{
+  // `fulfilled`
+  new Promise((resolve, reject) => resolve("fulfilled")) //
+    .then(
+      (response) => console.log("fulfilled", response),
+      (error) => console.error("fulfilled", error)
+    );
+
+  // `rejected`
+  new Promise((resolve, reject) => reject("rejected")) //
+    .then(
+      (response) => console.log("rejected", response),
+      (error) => console.error("rejected", error)
+    );
+}
+
+/**
+ * 45-3-2. Promise.prototype.catch
+ *
+ * `catch` 메서드는 한 개의 콜백 함수(실패 콜백 함수)를 인수로 전달받는다.
+ *  - `rejected` 상태(`reject` 함수가 호출된 상태)인 경우에만 호출된다.
+ *
+ * `catch` 메서드는 `then` 메서드와 마찬가지로 항상 `Promise`를 반환한다.
+ */
+{
+  // `rejected`
+  new Promise((resolve, reject) => reject(new Error("rejected"))) //
+    .catch((error) => console.error("rejected", error));
+}
+
+/**
+ * 45-3-3. Promise.prototype.finally
+ *
+ * `finally` 메서드는 한개의 콜백 함수를 인자로 전달받는다.
+ *  - 인자로 전달받은 콜백 함수는 `fulfilled`, `rejected` 상태와 상관없이 무조건 한 번만 호출된다.
+ *  - 단, `Promise`의 상태와 관계는 없지만 `Promise`가 settled 되어야 하기 때문에 내부에서 `resolve` 또는 `reject` 함수가 호출되어야만 실행된다. (즉 `pending` 상태에서는 호출되지 않음)
+ *
+ * `finally` 메서드도 항상 `Promise`를 반환한다.
+ */
+{
+  // `finally`
+  new Promise((resolve, reject) => resolve()) //
+    .finally(() => console.log("finally"));
+}
+
+{
+  // `Promise`로 구현한 `get`함수 후속 처리
+  const promiseGet = (url) => {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+
+      xhr.open("GET", url);
+      xhr.send();
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+          const response = JSON.parse(xhr.response);
+
+          return resolve(response);
+        }
+
+        return reject(new Error(xhr.status));
+      };
+    });
+  };
+
+  promiseGet(`${BASE_URL}/posts`) //
+    .then((response) => console.log("[promiseGet] response", response))
+    .catch((error) => console.error("[promiseGet] error", error))
+    .finally(() => console.log("[promiseGet] finally"));
+
+  // `fetch` 메서드를 활용한 `get`함수 후속 처리
+  const fetchGet = (url) => {
+    return fetch(url) //
+      .then((response) => {
+        if (!response.ok) {
+          return Promise.reject(new Error(response.status));
+        }
+
+        return response.json();
+      });
+  };
+
+  fetchGet(`${BASE_URL}/posts`) //
+    .then((response) => console.log("[fetchGet] response", response))
+    .catch((error) => console.error("[fetchGet] error", error))
+    .finally(() => console.log("[fetchGet] finally"));
 }
