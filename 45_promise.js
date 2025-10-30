@@ -316,3 +316,40 @@ const BASE_URL = "https://jsonplaceholder.typicode.com";
     .catch((error) => console.error("[fetchGet] error", error))
     .finally(() => console.log("[fetchGet] finally"));
 }
+
+/**
+ * 45-4. 프로미스의 에러 처리
+ */
+{
+  const promiseGet = (url) => {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+
+      xhr.open("GET", url);
+      xhr.send();
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+          const response = JSON.parse(xhr.response);
+
+          return resolve(response);
+        }
+
+        return reject(new Error(xhr.status));
+      };
+    });
+  };
+
+  const wrongUrl = `${BASE_URL}/xxx`;
+
+  // 부적절한 URL이 지정되었기 때문에 에러가 발생한다.
+  promiseGet(wrongUrl) //
+    .then(
+      (res) => console.log(res),
+      (err) => console.error(err)
+    );
+
+  // `catch`를 사용해 처리할 수도 있다. (`catch` 메서드는 `then` 메서드에서 발생한 에러까지 모두 처리할 수 있고 가독성도 좋다.)
+  promiseGet(`${BASE_URL}/posts`) //
+    .then((res) => console.xxx("res: ", res))
+    .catch((err) => console.error("err: ", err)); // TypeError: console.xxx is not a function
+}
