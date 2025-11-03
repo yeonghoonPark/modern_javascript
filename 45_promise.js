@@ -353,3 +353,54 @@ const BASE_URL = "https://jsonplaceholder.typicode.com";
     .then((res) => console.xxx("res: ", res))
     .catch((err) => console.error("err: ", err)); // TypeError: console.xxx is not a function
 }
+
+/**
+ * 45-5. 프로미스 체이닝
+ *
+ * 비동기 처리를 위한 콜백 패턴은 콜백 헬이 발생하는 문제가 있다.
+ * 프로미스는 `then`, `catch`, `finally` 후속 처리 메서드를 통해 콜백 헬을 해결한다.
+ */
+{
+  const promiseChainingGet = (url) => {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+
+      xhr.open("GET", url);
+      xhr.send();
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+          const response = JSON.parse(xhr.response);
+
+          return resolve(response);
+        }
+
+        return reject(new Error(xhr.statusText));
+      };
+    });
+  };
+
+  // `then`, `catch`, `finally` 후속 처리 메서드를 통한 프로미스 체이닝
+  promiseChainingGet(`${BASE_URL}/posts/1`) //
+    // `userId` 는 `promiseChainingGet(`${BASE_URL}/posts/1`)` 함수가 반환한 프로미스가 `resolve`한 값
+    .then(({ userId }) => promiseChainingGet(`${BASE_URL}/users/${userId}`))
+    // `userInfo` 는 `promiseChainingGet(`${BASE_URL}/users/${userId}`))` 함수가 반환한 프로미스가 `resolve`한 값
+    .then((userInfo) => console.log("[promiseChainingGet] ", userInfo))
+    // `promiseChainingGet(`${BASE_URL}/users/${userId}`))` 함수 또는 앞선 후속 처리 메서드가 반환한 프로미스가 `reject`한 값 (단, `reject`가 호출되지 않으면 `catch` 자체가 호출되지 않는다.)
+    .catch((error) => console.error("[promiseChainingGet] ", error))
+    .finally(() => console.log("[promiseChainingGet] finally"));
+
+  // 이처럼 `Promise`의 후속 처리 메서드를 활용하면 비동기 처리를 위한 콜백 패턴이 발생하지는 않는다.
+  // 다만, 프로미스도 콜백 패턴을 사용하므로 콜백 함수를 완전히 사용하지 않는 것은 아니다.
+  // 또한 후속 처리 메서드의 콜백 함수가 `Promise`가 아닌 값을 반환하더라도 그 값을 암묵적으로 `resolve` 또는 `reject`하여 프로미스를 생성해 반환한다.
+  // 이는 `useEffect`의 첫 번째 인자로 전달되는 `setup` 함수가 `async` 함수가 될 수 없는 이유가 된다.
+
+  // 프로미스는 에러 핸들링이나 후속 처리 메서드 지원으로 콜백 패턴보다 장점을 가지지만 콜백 함수를 사용하기 때문에 가독성이 좋지 않다.
+  // 이는 ES8에서 도입된 `async/await` 키워드를 통해 후속 처리 메서드 없이 마치 동기 처리처럼 프로미스 처리 결과를 반환하도록 구현할 수 있다.
+
+  (async () => {
+    const { userId } = await promiseChainingGet(`${BASE_URL}/posts/1`);
+    const userInfo = await promiseChainingGet(`${BASE_URL}/users/${userId}`);
+
+    console.log("[async await]", userInfo);
+  })();
+}
