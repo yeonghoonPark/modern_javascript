@@ -404,3 +404,130 @@ const BASE_URL = "https://jsonplaceholder.typicode.com";
     console.log("[async await]", userInfo);
   })();
 }
+
+/**
+ * 45-6. 프로미스의 정적 메서드
+ */
+
+/**
+ * 45-6-1. Promise.resolve / Promise.reject
+ *
+ * `Promise.resolve`와 `Promise.reject` 메서드는 이미 존재하는 값을 래핑하여 프로미스를 생성하기 위해 사용한다.
+ * `Promise.resolve`는 인수로 전달받은 값을 `resolve`하는 프로미스를 생성한다.
+ * `Promise.reject`는 인수로 전달받은 값을 `reject`하는 프로미스를 생성한다.
+ */
+{
+  // 배열을 resolve하는 프로미스를 생성
+  const resolvedPromise = Promise.resolve([1, 2, 3]);
+  resolvedPromise.then(console.log); // [1, 2, 3]
+
+  // 위 예제는 다음과 동일하게 동작한다.
+  const resolvedPromise2 = new Promise((resolve) => resolve(["a", "b", "c"]));
+  resolvedPromise2.then(console.log); // ['a', 'b', 'c']
+
+  // 에러 객체를 reject하는 프로미스를 생성
+  const rejectedPromise = Promise.reject(new Error("[rejectedPromise]"));
+  rejectedPromise.catch(console.log); // Error: [rejectedPromise]
+
+  // 위 예제는 다음과 동일하게 동작한다.
+  const rejectedPromise2 = new Promise((_, reject) => reject(new Error("[rejectedPromise2]")));
+  rejectedPromise2.catch(console.log); // Error: [rejectedPromise2]
+}
+
+/**
+ * 45-6-2. Promise.all
+ *
+ * `Promise.all` 메서드는 여러 개의 비동기 처리를 모두 병렬(parallel) 처리할 때 사용한다.
+ * `Promise.all` 메서드는 `Promise`를 요소로 갖는 배열 등의 이터러블을 인수로 전달받는다.
+ * 그리고 전달 받은 `Promise`가 모두 `fulfilled` 상태가 되면 모든 처리 결과를 배열에 저장해 새로운 프로미스를 반환한다.
+ * 또한 전달받은 `Promise`는 순서에 따라 배열의 순서를 보장 받는다.
+ * 단, 전달받은 `Promise` 중 하나라도 `rejected` 상태가 되면 나머지 프로미스가 `fulfilled` 상태여도 즉시 종료한다.
+ */
+{
+  const requestData1 = () => new Promise((resolve) => setTimeout(() => resolve(1), 3000));
+  const requestData2 = () => new Promise((resolve) => setTimeout(() => resolve(2), 2000));
+  const requestData3 = () => new Promise((resolve) => setTimeout(() => resolve(3), 1000));
+
+  // 위 3개의 비동기를 순차적으로 처리하는 경우
+  const res = [];
+  requestData1() //
+    .then((data) => {
+      res.push(data);
+
+      return requestData2();
+    })
+    .then((data) => {
+      res.push(data);
+
+      return requestData3();
+    })
+    .then((data) => {
+      res.push(data);
+
+      console.log("[res]: ", res); // [1, 2, 3] => 총 6초 소요
+    });
+
+  // 위 3개의 비동기를 병렬(parallel)로 처리하는 경우
+  Promise.all([requestData1(), requestData2(), requestData3()]) // 순서 보장
+    .then((data) => {
+      console.log("[res 2]:", data); // [1, 2, 3] => 총 3초 소요
+    });
+
+  // 인수로 전달받은 배열의 프로미스가 단 하나라도 `rejected` 상태가 발생하면 나머지 프로미스 상태를 기다리지 않고 즉시 종료된다.
+  Promise.all([
+    new Promise((_, reject) => setTimeout(() => reject(new Error("[Error 1]")), 3000)),
+    new Promise((_, reject) => setTimeout(() => reject(new Error("[Error 2]")), 2000)),
+    new Promise((_, reject) => setTimeout(() => reject(new Error("[Error 3]")), 1000)),
+  ]) //
+    .then(console.log)
+    // 가장 먼저 반환되는 프로미스인 세 번째 프로미스의 `reject`한 에러가 `catch` 메서드로 전달된다.
+    .catch(console.log); // Error: [Error 3]
+}
+
+/**
+ * 45-6-3. Promise.race
+ *
+ * `Promise.race` 메서드는 `Promise.all` 메서드와 동일하게 프로미스를 요소로 갖는 배열 등의 이터러블을 인수로 전달받는다.
+ * 단, `Promise.race` 메서드는 인수로 전달된 모든 프로미스의 `fulfilled` 상태가 되는 것을 기다리지 않고,
+ * 가장 먼저 `fulfilled` 상태가 된 프로미스의 처리 결과를 `resolve` 하는 새로운 프로미스를 반환한다.
+ * 또한 `Promise.all` 메서드와 동일하게 `Promise.race`에 인수로 전달된 프로미스 중 단 하나라도 `rejected` 상태가 되면 에러를 `reject`하는 새로운 프로미스를 즉시 반환한다.
+ */
+{
+  Promise.race([
+    new Promise((resolve) => setTimeout(() => resolve(1), 3000)),
+    new Promise((resolve) => setTimeout(() => resolve(2), 2000)),
+    new Promise((resolve) => setTimeout(() => resolve(3), 1000)),
+  ]) //
+    .then((res) => console.log("[race resolve]", res)); // 3
+
+  Promise.race([
+    new Promise((_, reject) => setTimeout(() => reject(new Error("[Error 1]")), 3000)),
+    new Promise((_, reject) => setTimeout(() => reject(new Error("[Error 2]")), 2000)),
+    new Promise((_, reject) => setTimeout(() => reject(new Error("[Error 3]")), 1000)),
+  ]) //
+    .then()
+    .catch((error) => console.log("[race reject]", error)); // [race reject] Error: [Error 3]
+}
+
+/**
+ * 45-6-4. Promise.allSettled
+ *
+ * `Promise.allSettled` 메서드는 프로미스를 요소로 갖는 배열 등의 이터러블을 인수로 전달 받는다.
+ * 전달 받은 프로미스가 모두 settled 상태(`fulfilled` or `rejected`)가 되면 처리 결과를 배열로 반환한다.
+ * `Promise.allSettled` 메서드가 반환한 배열에는 `fulfilled` 또는 `rejected` 상태와는 상관없이 인수로 전달받은 모든 프로미스의 처리 결과가 모두 담겨 있다.
+ * 프로미스의 처리 결과를 나타내는 객체는 다음과 같다.
+ *
+ * - fulfilled: 비동기 처리 상태를 나타내는 `status`, 처리 결과를 나타내는 `value` 프로퍼티를 갖는다.
+ * - rejected: 비동기 처리 상태를 나타내는 `status`, 에러를 나타내는 `reason` 프로퍼티를 갖는다.
+ */
+{
+  Promise.allSettled([
+    new Promise((resolve) => setTimeout(() => resolve("[allSettled]: resolve"), 2000)),
+    new Promise((_, reject) => setTimeout(() => reject(new Error("[allSettled]: reject")), 1000)),
+  ]) //
+    .then((res) => console.log("[allSettled]: res", res));
+  // [
+  //  {status: "fulfilled", value: "[allSettled: resolve]"},
+  //  {status: "rejected", reason: "Error: [allSettled: reject]: reject at http ~"},
+  // ]
+}
