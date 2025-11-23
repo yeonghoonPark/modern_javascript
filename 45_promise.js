@@ -531,3 +531,27 @@ const BASE_URL = "https://jsonplaceholder.typicode.com";
   //  {status: "rejected", reason: "Error: [allSettled: reject]: reject at http ~"},
   // ]
 }
+
+/**
+ * 45-7. 마이크로태스트 큐
+ *
+ * 비동기 큐는 3가지로 분류된다.
+ *
+ * 1. microtask queue
+ * 2. animation frame queue
+ * 3. task queue
+ *
+ * 위 순서대로 우선 순위를 가지며,
+ * `Promise`의 후속 처리 메서드는 `microtask queue`에 배정되고,
+ * `setTimeout`의 후속 처리 콜백 함수는 `task queue`에 배정된다.
+ *
+ * 같은 비동기라도 어느 큐에 배정되느냐에 따라 우선순위가 결정된다.
+ *
+ */
+{
+  setTimeout(() => console.log("[task Queue]: by setTimeout"), 0);
+
+  Promise.resolve() //
+    .then(() => console.log("[microtask Queue]: 1 by Promise"))
+    .then(() => console.log("[microtask Queue]: 2 by Promise"));
+}
